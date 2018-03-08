@@ -14,13 +14,11 @@ from UM.Settings.ContainerRegistry import ContainerRegistry
 from UM.MimeTypeDatabase import MimeTypeDatabase
 from UM.Job import Job
 from UM.Preferences import Preferences
-from UM.Util import parseBool
 from .WorkspaceDialog import WorkspaceDialog
 
 import xml.etree.ElementTree as ET
 
 from cura.Settings.CuraStackBuilder import CuraStackBuilder
-from cura.Settings.ExtruderManager import ExtruderManager
 from cura.Settings.ExtruderStack import ExtruderStack
 from cura.Settings.GlobalStack import GlobalStack
 from cura.Settings.CuraContainerStack import _ContainerIndexes
@@ -28,7 +26,6 @@ from cura.CuraApplication import CuraApplication
 
 from configparser import ConfigParser
 import zipfile
-import io
 import configparser
 import os
 import threading
@@ -390,6 +387,25 @@ class ThreeMFWorkspaceReader(WorkspaceReader):
         if user_changes_id not in ("empty", "empty_user_changes"):
             self._machine_info.user_changes_info = instance_container_info_dict[user_changes_id]
 
+        # Also check variant and material in case it doesn't have extruder stacks
+        if not extruder_stack_files:
+            position = "0"
+
+            extruder_info = ExtruderInfo()
+            extruder_info.position = position
+            variant_id = parser["containers"][str(_ContainerIndexes.Variant)]
+            material_id = parser["containers"][str(_ContainerIndexes.Material)]
+            if variant_id not in ("empty", "empty_variant"):
+                extruder_info.variant_info = instance_container_info_dict[variant_id]
+            if material_id not in ("empty", "empty_material"):
+                root_material_id = reverse_material_id_dict[material_id]
+                extruder_info.root_material_id = root_material_id
+            self._machine_info.extruder_info_dict[position] = extruder_info
+        else:
+            variant_id = parser["containers"][str(_ContainerIndexes.Variant)]
+            if variant_id not in ("empty", "empty_variant"):
+                self._machine_info.variant_info = instance_container_info_dict[variant_id]
+
         Job.yieldThread()
 
         # if the global stack is found, we check if there are conflicts in the extruder stacks
@@ -435,13 +451,14 @@ class ThreeMFWorkspaceReader(WorkspaceReader):
                         machine_conflict = True
                         break
 
-        for quality_changes_info in quality_changes_info_list:
-            if not quality_changes_info.parser.has_option("metadata", "extruder"):
-                continue
-            extruder_definition_id = quality_changes_info.parser["metadata"]["extruder"]
-            extruder_definition_metadata = self._container_registry.findDefinitionContainersMetadata(id = extruder_definition_id)[0]
-            position = extruder_definition_metadata["position"]
-            self._machine_info.quality_changes_info.extruder_info_dict[position] = quality_changes_info
+        if self._machine_info.quality_changes_info is not None:
+            for quality_changes_info in quality_changes_info_list:
+                if not quality_changes_info.parser.has_option("metadata", "extruder"):
+                    continue
+                extruder_definition_id = quality_changes_info.parser["metadata"]["extruder"]
+                extruder_definition_metadata = self._container_registry.findDefinitionContainersMetadata(id = extruder_definition_id)[0]
+                position = extruder_definition_metadata["position"]
+                self._machine_info.quality_changes_info.extruder_info_dict[position] = quality_changes_info
 
         num_visible_settings = 0
         try:
@@ -584,8 +601,8 @@ class ThreeMFWorkspaceReader(WorkspaceReader):
             # Get the correct extruder definition IDs for quality changes
             from cura.Machines.QualityManager import getMachineDefinitionIDForQualitySearch
             machine_definition_id_for_quality = getMachineDefinitionIDForQualitySearch(global_stack)
-            machine_definition_for_quality = self._container_registry.findDefinitionContainersMetadata(id = machine_definition_id_for_quality)[0]
-            extruder_dict_for_quality = machine_definition_for_quality["machine_extruder_trains"]
+            machine_definition_for_quality = self._container_registry.findDefinitionContainers(id = machine_definition_id_for_quality)[0]
+            extruder_dict_for_quality = machine_definition_for_quality.getMetaDataEntry("machine_extruder_trains")
 
             quality_changes_info = self._machine_info.quality_changes_info
             quality_changes_quality_type = quality_changes_info.global_info.parser["metadata"]["quality_type"]
