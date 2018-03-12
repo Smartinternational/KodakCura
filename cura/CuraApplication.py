@@ -101,7 +101,7 @@ if not MYPY:
     try:
         from cura.CuraVersion import CuraVersion, CuraBuildType, CuraDebugMode
     except ImportError:
-        CuraVersion = "master"  # [CodeStyle: Reflecting imported value]
+        CuraVersion = "3.2"  # [CodeStyle: Reflecting imported value]
         CuraBuildType = ""
         CuraDebugMode = False
 
@@ -216,7 +216,7 @@ class CuraApplication(QtApplication):
 
         self._additional_components = {} # Components to add to certain areas in the interface
 
-        super().__init__(name = "cura",
+        super().__init__(name = "dremel_digilab_3d",
                          version = CuraVersion,
                          buildtype = CuraBuildType,
                          is_debug_mode = CuraDebugMode,

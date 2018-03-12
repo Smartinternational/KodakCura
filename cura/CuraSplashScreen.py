@@ -60,7 +60,7 @@ class CuraSplashScreen(QSplashScreen):
         font = QFont()  # Using system-default font here
         font.setPixelSize(37)
         painter.setFont(font)
-        painter.drawText(215, 66, 330 * self._scale, 230 * self._scale, Qt.AlignLeft | Qt.AlignTop, version[0])
+        painter.drawText(215, 296, 330 * self._scale, 230 * self._scale, Qt.AlignLeft | Qt.AlignTop, version[0])
         if len(version) > 1:
             font.setPixelSize(16)
             painter.setFont(font)
@@ -69,11 +69,11 @@ class CuraSplashScreen(QSplashScreen):
         painter.setPen(QColor(255, 255, 255, 255))
 
         # draw the loading image
-        pen = QPen()
-        pen.setWidth(6 * self._scale)
-        pen.setColor(QColor(32, 166, 219, 255))
-        painter.setPen(pen)
-        painter.drawArc(60, 150, 32 * self._scale, 32 * self._scale, self._loading_image_rotation_angle * 16, 300 * 16)
+        #pen = QPen()
+        #pen.setWidth(6 * self._scale)
+        #pen.setColor(QColor(32, 166, 219, 255))
+        #painter.setPen(pen)
+        #painter.drawArc(160, 230, 32 * self._scale, 32 * self._scale, self._loading_image_rotation_angle * 16, 300 * 16)
 
         # draw message text
         if self._current_message:
@@ -83,7 +83,7 @@ class CuraSplashScreen(QSplashScreen):
             pen.setColor(QColor(255, 255, 255, 255))
             painter.setPen(pen)
             painter.setFont(font)
-            painter.drawText(100, 128, 170, 64,
+            painter.drawText(200, 208, 170, 64,
                              Qt.AlignLeft | Qt.AlignVCenter | Qt.TextWordWrap,
                              self._current_message)
 
