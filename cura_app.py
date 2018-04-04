@@ -9,7 +9,7 @@ import sys
 
 from UM.Platform import Platform
 
-parser = argparse.ArgumentParser(prog = "dremel_digilab_3d",
+parser = argparse.ArgumentParser(prog = "kodak_3dslicer",
                                  add_help = False)
 parser.add_argument('--debug',
                     action='store_true',
@@ -27,11 +27,11 @@ known_args = vars(parser.parse_known_args()[0])
 if not known_args["debug"]:
     def get_cura_dir_path():
         if Platform.isWindows():
-            return os.path.expanduser("~/AppData/Roaming/dremel_digilab_3d/")
+            return os.path.expanduser("~/AppData/Roaming/kodak_3dslicer/")
         elif Platform.isLinux():
-            return os.path.expanduser("~/.local/share/dremel_digilab_3d")
+            return os.path.expanduser("~/.local/share/kodak_3dslicer")
         elif Platform.isOSX():
-            return os.path.expanduser("~/Library/Logs/dremel_digilab_3d")
+            return os.path.expanduser("~/Library/Logs/kodak_3dslicer")
 
     if hasattr(sys, "frozen"):
         dirpath = get_cura_dir_path()
