@@ -12,7 +12,7 @@ UM.Dialog
     id: base
 
     //: About dialog title
-    title: catalog.i18nc("@title:window","About Dremel DigiLab 3D Slicer")
+    title: catalog.i18nc("@title:window","About Kodak 3D Slicer")
 
     minimumWidth: 500 * screenScaleFactor
     minimumHeight: 650 * screenScaleFactor
@@ -22,10 +22,10 @@ UM.Dialog
     Image
     {
         id: logo
-        width: (base.minimumWidth * 0.85) | 0
-        height: (width * (1/4.25)) | 0
+        width: (base.minimumWidth) | 0
+        height: (width * 0.4) | 0
 
-        source: UM.Theme.getImage("logo")
+        source: UM.Theme.getImage("about")
 
         sourceSize.width: width
         sourceSize.height: height
@@ -43,6 +43,7 @@ UM.Dialog
         text: catalog.i18nc("@label","version: %1").arg(UM.Application.version)
         font: UM.Theme.getFont("large")
         anchors.right : logo.right
+        anchors.rightMargin: (UM.Theme.getSize("default_margin").height / 2) | 0
         anchors.top: logo.bottom
         anchors.topMargin: (UM.Theme.getSize("default_margin").height / 2) | 0
     }
@@ -66,7 +67,7 @@ UM.Dialog
         width: parent.width
 
         //: About dialog application author note
-        text: catalog.i18nc("@info:credit","Dremel DigiLab 3D Slicer is derived from Cura.\nCura is developed by Ultimaker B.V. in cooperation with the community.\nCura proudly uses the following open source projects:")
+        text: catalog.i18nc("@info:credit","Kodak 3D Slicer is derived from Cura.\nCura is developed by Ultimaker B.V. in cooperation with the community.\nCura proudly uses the following open source projects:")
         font: UM.Theme.getFont("system")
         wrapMode: Text.WordWrap
         anchors.top: description.bottom
