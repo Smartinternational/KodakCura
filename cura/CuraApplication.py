@@ -216,7 +216,7 @@ class CuraApplication(QtApplication):
 
         self._additional_components = {} # Components to add to certain areas in the interface
 
-        super().__init__(name = "dremel_digilab_3d",
+        super().__init__(name = "kodak_3dslicer",
                          version = CuraVersion,
                          buildtype = CuraBuildType,
                          is_debug_mode = CuraDebugMode,
@@ -227,7 +227,7 @@ class CuraApplication(QtApplication):
         if kwargs["parsed_command_line"].get("trigger_early_crash", False):
             assert not "This crash is triggered by the trigger_early_crash command line argument."
 
-        self.default_theme = "cura-light"
+        self.default_theme = "kodak"
 
         self.setWindowIcon(QIcon(Resources.getPath(Resources.Images, "cura-icon.png")))
 
