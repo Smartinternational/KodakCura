@@ -218,15 +218,18 @@ Rectangle
                     elide: Text.ElideRight
                     color:
                     {
-                        if(control.pressed)
+                        if(control.pressed || (control.hovered && control.checked) || control.checked)
                         {
                             return UM.Theme.getColor("action_button_active_text");
                         }
-                        else if(control.hovered)
+                        else if(control.hovered && !control.checked)
                         {
                             return UM.Theme.getColor("action_button_hovered_text");
                         }
-                        return UM.Theme.getColor("action_button_text");
+                        else 
+                        {
+                            return UM.Theme.getColor("action_button_text");
+                        }
                     }
                 }
             }
