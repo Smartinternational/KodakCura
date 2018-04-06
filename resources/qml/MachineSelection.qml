@@ -53,7 +53,22 @@ ToolButton
             Label
             {
                 id: sidebarComboBoxLabel
-                color: UM.Theme.getColor("sidebar_header_text_active")
+                color: 
+                {
+                    if(control.pressed)
+                    {
+                        return UM.Theme.getColor("sidebar_header_text_active")
+                    }
+                    else if(control.hovered)
+                    {
+                        return UM.Theme.getColor("sidebar_header_text_hover");
+                    }
+                    else
+                    {
+                        return UM.Theme.getColor("sidebar_header_text_inactive");
+                    }
+                }
+                
                 text: control.text;
                 elide: Text.ElideRight;
                 anchors.left: parent.left;
