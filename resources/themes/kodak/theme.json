@@ -1,7 +1,6 @@
 {
     "metadata": {
-        "name": "Kodak",
-        "inherits": "cura-light"
+        "name": "Kodak"
     },
     "fonts": {
         "large": {
