@@ -948,6 +948,7 @@ Item
                 onModelChanged: populateExtruderModel()
             }
 
+            /*
             Item
             {
                 id: tipsCell
@@ -973,6 +974,7 @@ Item
                     onLinkActivated: Qt.openUrlExternally(link)
                 }
             }
+            */
 
             UM.SettingPropertyProvider
             {
