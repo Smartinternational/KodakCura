@@ -37,7 +37,7 @@ if not known_args["debug"]:
         dirpath = get_cura_dir_path()
         os.makedirs(dirpath, exist_ok = True)
         sys.stdout = open(os.path.join(dirpath, "stdout.log"), "w", encoding = "utf-8")
-        sys.stderr = open(o .path.join(dirpath, "stderr.log"), "w", encoding = "utf-8")
+        sys.stderr = open(os.path.join(dirpath, "stderr.log"), "w", encoding = "utf-8")
 
 import platform
 import faulthandler
