@@ -9,12 +9,14 @@
         "category": "KODAK",
         "file_formats": "text/x-gcode",
         "icon": "icon_ultimaker2",
-        "supports_usb_connection": true,
         "machine_extruder_trains":
         {
             "0": "kodak_portrait_1st",
             "1": "kodak_portrait_2st"
-        }
+        },
+        "first_start_actions": [ "DiscoverUM3Action" ],
+        "supported_actions": [ "DiscoverUM3Action" ],
+        "supports_usb_connection": true
     },
 
     "overrides": {
