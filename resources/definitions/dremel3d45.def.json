@@ -9,16 +9,14 @@
         "category": "Dremel DigiLab",
         "file_formats": "text/x-gcode",
         "icon": "icon_ultimaker2",
-        "supports_usb_connection": false,
+        "supports_usb_connection": true,
         "platform": "Dremel_platform.stl",
-        "machine_extruder_trains":
-        {
-            "0": "fdmextruder"
-        },
         "has_machine_materials": true,
         "has_materials": true,
-        "preferred_material": "ECO-ABS",
-		"has_machine_quality": false
+        "preferred_material": "dremel_eco-abs",
+		"has_machine_quality": false,
+        "first_start_actions": [ "DiscoverUM3Action" ],
+        "supported_actions": [ "DiscoverUM3Action" ]
     },
 
     "overrides": {

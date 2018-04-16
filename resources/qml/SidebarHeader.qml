@@ -329,6 +329,7 @@ Column
             rightMargin: UM.Theme.getSize("sidebar_margin").width
         }
 
+        /*
         Item {
             height: UM.Theme.getSize("sidebar_setup").height
             anchors.right: parent.right
@@ -346,6 +347,7 @@ Column
                 visible: !Cura.MachineManager.isCurrentSetupSupported
             }
 
+            
             Label {
                 id: materialInfoLabel
                 wrapMode: Text.WordWrap
@@ -380,6 +382,7 @@ Column
                 }
             }
         }
+        */
     }
 
     UM.SettingPropertyProvider
