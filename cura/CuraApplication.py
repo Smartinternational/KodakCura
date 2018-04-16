@@ -227,7 +227,7 @@ class CuraApplication(QtApplication):
         if kwargs["parsed_command_line"].get("trigger_early_crash", False):
             assert not "This crash is triggered by the trigger_early_crash command line argument."
 
-        self.default_theme = "cura-light"
+        self.default_theme = "Dremel"
 
         self.setWindowIcon(QIcon(Resources.getPath(Resources.Images, "cura-icon.png")))
 
