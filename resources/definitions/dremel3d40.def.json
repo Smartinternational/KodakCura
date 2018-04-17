@@ -17,7 +17,7 @@
         "has_machine_materials": true,
         "has_materials": true,
 	    "has_machine_quality": true,
-        "preferred_material": "dremel_pla",
+        "preferred_material": "*dremel_pla*",
         "first_start_actions": [ "DiscoverUM3Action" ],
         "supported_actions": [ "DiscoverUM3Action" ]
     },

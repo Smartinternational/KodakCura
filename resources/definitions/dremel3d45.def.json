@@ -13,7 +13,11 @@
         "platform": "Dremel_platform.stl",
         "has_machine_materials": true,
         "has_materials": true,
-        "preferred_material": "dremel_eco-abs",
+        "machine_extruder_trains":
+        {
+            "0": "fdmextruder"
+        },
+        "preferred_material": "*dremel_eco-abs*",
 		"has_machine_quality": false,
         "first_start_actions": [ "DiscoverUM3Action" ],
         "supported_actions": [ "DiscoverUM3Action" ]
