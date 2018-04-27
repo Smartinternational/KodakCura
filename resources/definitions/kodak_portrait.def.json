@@ -17,11 +17,12 @@
       "1": "kodak_portrait_2nd"
     },
     "supports_usb_connection": true,
-    "preferred_material": "generic_pla"
+    "has_machine_quality": true,
+    "preferred_material": "*kodak_pla*"
   },
 
   "overrides": {
-    "machine_name": { "default_value": "KODAK Portrait" },
+    "machine_name": { "default_value": "KodakPortrait" },
     "machine_extruder_count": { "default_value": 2 },
     "machine_heated_bed": { "default_value": true },
     "machine_height": { "default_value": 250 },
