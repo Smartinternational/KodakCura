@@ -17,7 +17,6 @@
       "1": "kodak_portrait_2nd"
     },
     "supports_usb_connection": true,
-    "has_machine_quality": true,
     "preferred_material": "*kodak_pla*"
   },
 
