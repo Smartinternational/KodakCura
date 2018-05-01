@@ -320,7 +320,7 @@ Column
         id: materialInfoRow
         height: Math.round(UM.Theme.getSize("sidebar_setup").height / 2)
         visible: (Cura.MachineManager.hasVariants || Cura.MachineManager.hasMaterials) && !sidebar.monitoringPrint && !sidebar.hideSettings
-
+        
         anchors
         {
             left: parent.left
@@ -357,6 +357,7 @@ Column
                 anchors.top: parent.top
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
+                visible: false
 
                 MouseArea {
                     anchors.fill: parent
