@@ -178,7 +178,9 @@ class ExtrudersModel(UM.Qt.ListModel.ListModel):
 
                 default_color = self.defaultColors[position] if 0 <= position < len(self.defaultColors) else self.defaultColors[0]
                 color = extruder.material.getMetaDataEntry("color_code", default = default_color) if extruder.material else default_color
-
+                
+                if extruder.getMetaDataEntry("material_color"):
+                    color = extruder.getMetaDataEntry("material_color")
                 # construct an item with only the relevant information
                 item = {
                     "id": extruder.getId(),
