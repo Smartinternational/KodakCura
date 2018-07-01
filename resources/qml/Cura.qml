@@ -139,13 +139,15 @@ UM.MainWindow
                     text: catalog.i18nc("@title:menu menubar:file","Save &Project...")
                     onTriggered:
                     {
+                        var args = { "filter_by_machine": false, "file_type": "workspace", "preferred_mimetype": "application/x-curaproject+xml" };
                         if(UM.Preferences.getValue("cura/dialog_on_project_save"))
                         {
+                            saveWorkspaceDialog.args = args;
                             saveWorkspaceDialog.open()
                         }
                         else
                         {
-                            UM.OutputDeviceManager.requestWriteToDevice("local_file", PrintInformation.jobName, { "filter_by_machine": false, "file_type": "workspace" })
+                            UM.OutputDeviceManager.requestWriteToDevice("local_file", PrintInformation.jobName, args)
                         }
                     }
                 }
@@ -194,20 +196,39 @@ UM.MainWindow
                         NozzleMenu { title: Cura.MachineManager.activeDefinitionVariantsName; visible: Cura.MachineManager.hasVariants; extruderIndex: index }
                         MaterialMenu { title: catalog.i18nc("@title:menu", "&Material"); visible: Cura.MachineManager.hasMaterials; extruderIndex: index }
 
-                        MenuSeparator {
+                        MenuSeparator
+                        {
                             visible: Cura.MachineManager.hasVariants || Cura.MachineManager.hasMaterials
                         }
 
-                        MenuItem {
+                        MenuItem
+                        {
                             text: catalog.i18nc("@action:inmenu", "Set as Active Extruder")
-                            onTriggered: Cura.ExtruderManager.setActiveExtruderIndex(model.index)
+                            onTriggered: Cura.MachineManager.setExtruderIndex(model.index)
                         }
+
+                        MenuItem
+                        {
+                            text: catalog.i18nc("@action:inmenu", "Enable Extruder")
+                            onTriggered: Cura.MachineManager.setExtruderEnabled(model.index, true)
+                            visible: !Cura.MachineManager.getExtruder(model.index).isEnabled
+                        }
+
+                        MenuItem
+                        {
+                            text: catalog.i18nc("@action:inmenu", "Disable Extruder")
+                            onTriggered: Cura.MachineManager.setExtruderEnabled(model.index, false)
+                            visible: Cura.MachineManager.getExtruder(model.index).isEnabled
+                            enabled: Cura.MachineManager.numberExtrudersEnabled > 1
+                        }
+
                     }
                     onObjectAdded: settingsMenu.insertItem(index, object)
                     onObjectRemoved: settingsMenu.removeItem(object)
                 }
 
-                BuildplateMenu { title: catalog.i18nc("@title:menu", "&Build plate"); visible: Cura.MachineManager.hasVariantBuildplates }
+                // TODO Temporary hidden, add back again when feature ready
+//                BuildplateMenu { title: catalog.i18nc("@title:menu", "&Build plate"); visible: Cura.MachineManager.hasVariantBuildplates }
                 ProfileMenu { title: catalog.i18nc("@title:menu", "&Profile"); }
 
                 MenuSeparator { }
@@ -252,9 +273,9 @@ UM.MainWindow
             Menu
             {
                 id: plugin_menu
-                title: catalog.i18nc("@title:menu menubar:toplevel", "P&lugins")
+                title: catalog.i18nc("@title:menu menubar:toplevel", "&Toolbox")
 
-                MenuItem { action: Cura.Actions.browsePlugins }
+                MenuItem { action: Cura.Actions.browsePackages }
             }
 
             Menu
@@ -304,32 +325,25 @@ UM.MainWindow
                 {
                     if (drop.urls.length > 0)
                     {
-                        // As the drop area also supports plugins, first check if it's a plugin that was dropped.
-                        if (drop.urls.length == 1)
+
+                        var nonPackages = [];
+                        for (var i = 0; i < drop.urls.length; i++)
                         {
-                            if (PluginRegistry.isPluginFile(drop.urls[0]))
+                            var filename = drop.urls[i];
+                            if (filename.endsWith(".curapackage"))
                             {
                                 // Try to install plugin & close.
-                                var result = PluginRegistry.installPlugin(drop.urls[0]);
-                                pluginInstallDialog.text = result.message;
-                                if (result.status == "ok")
-                                {
-                                    pluginInstallDialog.icon = StandardIcon.Information;
-                                }
-                                else if (result.status == "duplicate")
-                                {
-                                    pluginInstallDialog.icon = StandardIcon.Warning;
-                                }
-                                else
-                                {
-                                    pluginInstallDialog.icon = StandardIcon.Critical;
-                                }
-                                pluginInstallDialog.open();
-                                return;
+                                CuraApplication.getPackageManager().installPackageViaDragAndDrop(filename);
+                                packageInstallDialog.text = catalog.i18nc("@label", "This package will be installed after restarting.");
+                                packageInstallDialog.icon = StandardIcon.Information;
+                                packageInstallDialog.open();
+                            }
+                            else
+                            {
+                                nonPackages.push(filename);
                             }
                         }
-
-                        openDialog.handleOpenFileUrls(drop.urls);
+                        openDialog.handleOpenFileUrls(nonPackages);
                     }
                 }
             }
@@ -495,6 +509,7 @@ UM.MainWindow
                     horizontalCenterOffset: -(Math.round(UM.Theme.getSize("sidebar").width / 2))
                     top: parent.verticalCenter;
                     bottom: parent.bottom;
+                    bottomMargin:  UM.Theme.getSize("default_margin").height
                 }
             }
         }
@@ -544,7 +559,8 @@ UM.MainWindow
     WorkspaceSummaryDialog
     {
         id: saveWorkspaceDialog
-        onYes: UM.OutputDeviceManager.requestWriteToDevice("local_file", PrintInformation.jobName, { "filter_by_machine": false, "file_type": "workspace" })
+        property var args
+        onYes: UM.OutputDeviceManager.requestWriteToDevice("local_file", PrintInformation.jobName, args)
     }
 
     Connections
@@ -636,7 +652,10 @@ UM.MainWindow
         {
             preferences.visible = true;
             preferences.setPage(1);
-            preferences.getCurrentItem().scrollToSection(source.key);
+            if(source && source.key)
+            {
+                preferences.getCurrentItem().scrollToSection(source.key);
+            }
         }
     }
 
@@ -647,9 +666,9 @@ UM.MainWindow
     // show the plugin browser dialog
     Connections
     {
-        target: Cura.Actions.browsePlugins
+        target: Cura.Actions.browsePackages
         onTriggered: {
-            curaExtensions.callExtensionMethod("Plugin Browser", "browsePlugins")
+            curaExtensions.callExtensionMethod("Toolbox", "browsePackages")
         }
     }
 
@@ -794,8 +813,8 @@ UM.MainWindow
 
     MessageDialog
     {
-        id: pluginInstallDialog
-        title: catalog.i18nc("@window:title", "Install Plugin");
+        id: packageInstallDialog
+        title: catalog.i18nc("@window:title", "Install Package");
         standardButtons: StandardButton.Ok
         modality: Qt.ApplicationModal
     }
@@ -834,6 +853,16 @@ UM.MainWindow
         id: askOpenAsProjectOrModelsDialog
     }
 
+    Connections
+    {
+        target: CuraApplication
+        onOpenProjectFile:
+        {
+            askOpenAsProjectOrModelsDialog.fileUrl = project_file;
+            askOpenAsProjectOrModelsDialog.show();
+        }
+    }
+
     EngineLog
     {
         id: engineLog;
@@ -849,6 +878,9 @@ UM.MainWindow
                 path = path.replace(/\\/g,"/");
             }
             Qt.openUrlExternally(path);
+            if(Qt.platform.os == "linux") {
+                Qt.openUrlExternally(UM.Resources.getPath(UM.Resources.Resources, ""));
+            }
         }
     }
 

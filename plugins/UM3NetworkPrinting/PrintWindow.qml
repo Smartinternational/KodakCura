@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Ultimaker B.V.
+// Copyright (c) 2018 Ultimaker B.V.
 // Cura is released under the terms of the LGPLv3 or higher.
 
 import QtQuick 2.2
@@ -48,7 +48,7 @@ UM.Dialog
         anchors.topMargin: UM.Theme.getSize("default_margin").height
         anchors.leftMargin: UM.Theme.getSize("default_margin").width
         anchors.rightMargin: UM.Theme.getSize("default_margin").width
-        height: 50 * screenScaleFactord
+        height: 50 * screenScaleFactor
         Label
         {
             id: manualPrinterSelectionLabel
@@ -90,6 +90,7 @@ UM.Dialog
             onClicked: {
                 base.visible = false;
                 printerSelectionCombobox.currentIndex = 0
+                OutputDevice.cancelPrintSelection()
             }
         }
     ]
@@ -101,7 +102,7 @@ UM.Dialog
             enabled: true
             onClicked: {
                 base.visible = false;
-                OutputDevice.sendPrintJob(printerSelectionCombobox.model.get(printerSelectionCombobox.currentIndex).key)
+                OutputDevice.selectPrinter(printerSelectionCombobox.model.get(printerSelectionCombobox.currentIndex).key)
                 // reset to defaults
                 printerSelectionCombobox.currentIndex = 0
             }

@@ -36,12 +36,14 @@ Item
         text: catalog.i18nc("@title:tab", "Profiles")
     }
 
-    property var hasCurrentItem: qualityListView.currentItem != null
+    property var hasCurrentItem: base.currentItem != null
 
     property var currentItem: {
         var current_index = qualityListView.currentIndex;
-        return qualitiesModel.getItem(current_index);
+        return (current_index == -1) ? null : qualitiesModel.getItem(current_index);
     }
+
+    property var currentItemName: hasCurrentItem ? base.currentItem.name : ""
 
     property var isCurrentItemActivated: {
         if (!base.currentItem) {
@@ -235,7 +237,7 @@ Item
 
         icon: StandardIcon.Question;
         title: catalog.i18nc("@title:window", "Confirm Remove")
-        text: catalog.i18nc("@label (%1 is object name)", "Are you sure you wish to remove %1? This cannot be undone!").arg(base.currentItem.name)
+        text: catalog.i18nc("@label (%1 is object name)", "Are you sure you wish to remove %1? This cannot be undone!").arg(base.currentItemName)
         standardButtons: StandardButton.Yes | StandardButton.No
         modality: Qt.ApplicationModal
 
@@ -367,12 +369,27 @@ Item
             }
 
             width: true ? (parent.width * 0.4) | 0 : parent.width
+            frameVisible: true
 
             ListView
             {
                 id: qualityListView
 
                 model: qualitiesModel
+
+                Component.onCompleted:
+                {
+                    var selectedItemName = Cura.MachineManager.activeQualityOrQualityChangesName;
+
+                    // Select the required quality name if given
+                    for (var idx = 0; idx < qualitiesModel.rowCount(); idx++) {
+                        var item = qualitiesModel.getItem(idx);
+                        if (item.name == selectedItemName) {
+                            currentIndex = idx;
+                            break;
+                        }
+                    }
+                }
 
                 section.property: "is_read_only"
                 section.delegate: Rectangle
@@ -392,22 +409,20 @@ Item
                 {
                     width: profileScrollView.width
                     height: childrenRect.height
-                    color: ListView.isCurrentItem ? palette.highlight : (model.index % 2) ? palette.base : palette.alternateBase
 
-                    Row
+                    property bool isCurrentItem: ListView.isCurrentItem
+                    color: isCurrentItem ? palette.highlight : (model.index % 2) ? palette.base : palette.alternateBase
+
+                    Label
                     {
-                        spacing: (UM.Theme.getSize("default_margin").width / 2) | 0
                         anchors.left: parent.left
                         anchors.leftMargin: UM.Theme.getSize("default_margin").width
                         anchors.right: parent.right
-                        Label
-                        {
-                            width: Math.floor((parent.width * 0.8))
-                            text: model.name
-                            elide: Text.ElideRight
-                            font.italic: model.name == Cura.MachineManager.activeQualityOrQualityChangesName
-                            color: parent.ListView.isCurrentItem ? palette.highlightedText : palette.text
-                        }
+                        width: Math.floor((parent.width * 0.8))
+                        text: model.name
+                        elide: Text.ElideRight
+                        font.italic: model.name == Cura.MachineManager.activeQualityOrQualityChangesName
+                        color: parent.isCurrentItem ? palette.highlightedText : palette.text
                     }
 
                     MouseArea
@@ -437,6 +452,7 @@ Item
             Item
             {
                 anchors.fill: parent
+                visible: base.currentItem != null
 
                 Item    // Profile title Label
                 {
@@ -446,7 +462,7 @@ Item
                     height: childrenRect.height
 
                     Label {
-                        text: base.currentItem.name
+                        text: base.currentItemName
                         font: UM.Theme.getFont("large")
                     }
                 }

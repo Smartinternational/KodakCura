@@ -5,7 +5,6 @@ from UM.OutputDevice.OutputDevicePlugin import OutputDevicePlugin
 from UM.Logger import Logger
 from UM.Application import Application
 from UM.Signal import Signal, signalemitter
-from UM.Preferences import Preferences
 from UM.Version import Version
 
 from . import ClusterUM3OutputDevice, LegacyUM3OutputDevice
@@ -54,11 +53,14 @@ class UM3OutputDevicePlugin(OutputDevicePlugin):
         self._cluster_api_prefix = "/cluster-api/v" + self._cluster_api_version + "/"
 
         # Get list of manual instances from preferences
-        self._preferences = Preferences.getInstance()
+        self._preferences = Application.getInstance().getPreferences()
         self._preferences.addPreference("um3networkprinting/manual_instances",
                                         "")  # A comma-separated list of ip adresses or hostnames
 
         self._manual_instances = self._preferences.getValue("um3networkprinting/manual_instances").split(",")
+
+        # Store the last manual entry key
+        self._last_manual_entry_key = "" # type: str
 
         # The zero-conf service changed requests are handled in a separate thread, so we can re-schedule the requests
         # which fail to get detailed service info.
@@ -72,6 +74,12 @@ class UM3OutputDevicePlugin(OutputDevicePlugin):
     def getDiscoveredDevices(self):
         return self._discovered_devices
 
+    def getLastManualDevice(self) -> str:
+        return self._last_manual_entry_key
+
+    def resetLastManualDevice(self) -> None:
+        self._last_manual_entry_key = ""
+
     ##  Start looking for devices on network.
     def start(self):
         self.startDiscovery()
@@ -82,6 +90,9 @@ class UM3OutputDevicePlugin(OutputDevicePlugin):
             self._zero_conf_browser.cancel()
             self._zero_conf_browser = None  # Force the old ServiceBrowser to be destroyed.
 
+        for instance_name in list(self._discovered_devices):
+            self._onRemoveDevice(instance_name)
+
         self._zero_conf = Zeroconf()
         self._zero_conf_browser = ServiceBrowser(self._zero_conf, u'_ultimaker._tcp.local.',
                                                  [self._appendServiceChangedRequest])
@@ -90,6 +101,7 @@ class UM3OutputDevicePlugin(OutputDevicePlugin):
         for address in self._manual_instances:
             if address:
                 self.addManualDevice(address)
+        self.resetLastManualDevice()
 
     def reCheckConnections(self):
         active_machine = Application.getInstance().getGlobalContainerStack()
@@ -104,6 +116,8 @@ class UM3OutputDevicePlugin(OutputDevicePlugin):
                     Logger.log("d", "Attempting to connect with [%s]" % key)
                     self._discovered_devices[key].connect()
                     self._discovered_devices[key].connectionStateChanged.connect(self._onDeviceConnectionStateChanged)
+                else:
+                    self._onDeviceConnectionStateChanged(key)
             else:
                 if self._discovered_devices[key].isConnected():
                     Logger.log("d", "Attempting to close connection with [%s]" % key)
@@ -114,7 +128,10 @@ class UM3OutputDevicePlugin(OutputDevicePlugin):
         if key not in self._discovered_devices:
             return
         if self._discovered_devices[key].isConnected():
-            self.getOutputDeviceManager().addOutputDevice(self._discovered_devices[key])
+            # Sometimes the status changes after changing the global container and maybe the device doesn't belong to this machine
+            um_network_key = Application.getInstance().getGlobalContainerStack().getMetaDataEntry("um_network_key")
+            if key == um_network_key:
+                self.getOutputDeviceManager().addOutputDevice(self._discovered_devices[key])
         else:
             self.getOutputDeviceManager().removeOutputDevice(key)
 
@@ -128,6 +145,7 @@ class UM3OutputDevicePlugin(OutputDevicePlugin):
             if not address:
                 address = self._discovered_devices[key].ipAddress
             self._onRemoveDevice(key)
+            self.resetLastManualDevice()
 
         if address in self._manual_instances:
             self._manual_instances.remove(address)
@@ -143,12 +161,14 @@ class UM3OutputDevicePlugin(OutputDevicePlugin):
             b"name": address.encode("utf-8"),
             b"address": address.encode("utf-8"),
             b"manual": b"true",
-            b"incomplete": b"true"
+            b"incomplete": b"true",
+            b"temporary": b"true"   # Still a temporary device until all the info is retrieved in _onNetworkRequestFinished
         }
 
         if instance_name not in self._discovered_devices:
             # Add a preliminary printer instance
             self._onAddDevice(instance_name, address, properties)
+        self._last_manual_entry_key = instance_name
 
         self._checkManualDevice(address)
 
@@ -182,7 +202,7 @@ class UM3OutputDevicePlugin(OutputDevicePlugin):
                 b"address": address.encode("utf-8"),
                 b"firmware_version": system_info["firmware"].encode("utf-8"),
                 b"manual": b"true",
-                b"machine": system_info["variant"].encode("utf-8")
+                b"machine": str(system_info['hardware']["typeid"]).encode("utf-8")
             }
 
             if has_cluster_capable_firmware:

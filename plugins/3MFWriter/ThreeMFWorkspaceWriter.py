@@ -6,16 +6,18 @@ from io import StringIO
 import zipfile
 
 from UM.Application import Application
-from UM.Logger import Logger
 from UM.Preferences import Preferences
 from UM.Settings.ContainerRegistry import ContainerRegistry
 from UM.Workspace.WorkspaceWriter import WorkspaceWriter
+
+from cura.Utils.Threading import call_on_qt_thread
 
 
 class ThreeMFWorkspaceWriter(WorkspaceWriter):
     def __init__(self):
         super().__init__()
 
+    @call_on_qt_thread
     def write(self, stream, nodes, mode=WorkspaceWriter.OutputMode.BinaryMode):
         application = Application.getInstance()
         machine_manager = application.getMachineManager()
@@ -49,7 +51,7 @@ class ThreeMFWorkspaceWriter(WorkspaceWriter):
                 self._writeContainerToArchive(container, archive)
 
         # Write preferences to archive
-        original_preferences = Preferences.getInstance() #Copy only the preferences that we use to the workspace.
+        original_preferences = Application.getInstance().getPreferences() #Copy only the preferences that we use to the workspace.
         temp_preferences = Preferences()
         for preference in {"general/visible_settings", "cura/active_mode", "cura/categories_expanded"}:
             temp_preferences.addPreference(preference, None)

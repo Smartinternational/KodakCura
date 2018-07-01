@@ -36,8 +36,8 @@ TabView
         if (!base.containerId || !base.editingEnabled) {
             return ""
         }
-        var linkedMaterials = Cura.ContainerManager.getLinkedMaterials(base.currentMaterialNode);
-        if (linkedMaterials.length <= 1) {
+        var linkedMaterials = Cura.ContainerManager.getLinkedMaterials(base.currentMaterialNode, true);
+        if (linkedMaterials.length == 0) {
             return ""
         }
         return linkedMaterials.join(", ");
@@ -92,13 +92,14 @@ TabView
 
                     icon: StandardIcon.Question;
                     title: catalog.i18nc("@title:window", "Confirm Diameter Change")
-                    text: catalog.i18nc("@label (%1 is object name)", "The new material diameter is set to %1 mm, which is not compatible to the current machine. Do you wish to continue?".arg(new_diameter_value))
+                    text: catalog.i18nc("@label (%1 is a number)", "The new filament diameter is set to %1 mm, which is not compatible with the current extruder. Do you wish to continue?".arg(new_diameter_value))
                     standardButtons: StandardButton.Yes | StandardButton.No
                     modality: Qt.ApplicationModal
 
                     property var new_diameter_value: null;
                     property var old_diameter_value: null;
                     property var old_approximate_diameter_value: null;
+                    property bool keyPressed: false
 
                     onYes:
                     {
@@ -111,6 +112,16 @@ TabView
                     {
                         properties.diameter = old_diameter_value;
                         diameterSpinBox.value = properties.diameter;
+                    }
+
+                    onVisibilityChanged:
+                    {
+                        if (!visible && !keyPressed)
+                        {
+                            // If the user closes this dialog without clicking on any button, it's the same as clicking "No".
+                            no();
+                        }
+                        keyPressed = false;
                     }
                 }
 
@@ -222,7 +233,7 @@ TabView
                         var old_diameter = Cura.ContainerManager.getContainerProperty(base.containerId, "material_diameter", "value").toString();
                         var old_approximate_diameter = Cura.ContainerManager.getContainerMetaDataEntry(base.containerId, "approximate_diameter");
                         var new_approximate_diameter = getApproximateDiameter(value);
-                        if (Cura.MachineManager.filterMaterialsByMachine && new_approximate_diameter != Cura.ExtruderManager.getActiveExtruderStack().approximateMaterialDiameter)
+                        if (new_approximate_diameter != Cura.ExtruderManager.getActiveExtruderStack().approximateMaterialDiameter)
                         {
                             confirmDiameterChangeDialog.old_diameter_value = old_diameter;
                             confirmDiameterChangeDialog.new_diameter_value = value;
@@ -393,10 +404,17 @@ TabView
                         id: spinBox
                         anchors.left: label.right
                         value: {
+                            // In case the setting is not in the material...
                             if (!isNaN(parseFloat(materialPropertyProvider.properties.value)))
                             {
                                 return parseFloat(materialPropertyProvider.properties.value);
                             }
+                            // ... we search in the variant, and if it is not there...
+                            if (!isNaN(parseFloat(variantPropertyProvider.properties.value)))
+                            {
+                                return parseFloat(variantPropertyProvider.properties.value);
+                            }
+                            // ... then look in the definition container.
                             if (!isNaN(parseFloat(machinePropertyProvider.properties.value)))
                             {
                                 return parseFloat(machinePropertyProvider.properties.value);
@@ -416,6 +434,13 @@ TabView
                     {
                         id: materialPropertyProvider
                         containerId: base.containerId
+                        watchedProperties: [ "value" ]
+                        key: model.key
+                    }
+                    UM.ContainerPropertyProvider
+                    {
+                        id: variantPropertyProvider
+                        containerId: Cura.MachineManager.activeVariantId
                         watchedProperties: [ "value" ]
                         key: model.key
                     }

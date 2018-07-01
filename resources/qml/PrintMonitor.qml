@@ -67,7 +67,7 @@ Column
     HeatedBedBox
     {
         visible: {
-            if(activePrinter != null && activePrinter.bed_temperature != -1)
+            if(activePrinter != null && activePrinter.bedTemperature != -1)
             {
                 return true
             }
@@ -122,7 +122,7 @@ Column
     {
         label: catalog.i18nc("@label", "Printing Time")
         value: activePrintJob != null ? getPrettyTime(activePrintJob.timeTotal) : ""
-        width:base.width
+        width: base.width
         visible: activePrinter != null
     }
 

@@ -1,9 +1,13 @@
+# Copyright (c) 2018 Ultimaker B.V.
+# Cura is released under the terms of the LGPLv3 or higher.
+
+from PyQt5.QtCore import QTimer
+
 from UM.Application import Application
 from UM.Qt.ListModel import ListModel
 from UM.Scene.Iterator.DepthFirstIterator import DepthFirstIterator
 from UM.Scene.SceneNode import SceneNode
 from UM.Scene.Selection import Selection
-from UM.Preferences import Preferences
 from UM.i18n import i18nCatalog
 
 catalog = i18nCatalog("cura")
@@ -14,8 +18,13 @@ class ObjectsModel(ListModel):
     def __init__(self):
         super().__init__()
 
-        Application.getInstance().getController().getScene().sceneChanged.connect(self._update)
-        Preferences.getInstance().preferenceChanged.connect(self._update)
+        Application.getInstance().getController().getScene().sceneChanged.connect(self._updateDelayed)
+        Application.getInstance().getPreferences().preferenceChanged.connect(self._updateDelayed)
+
+        self._update_timer = QTimer()
+        self._update_timer.setInterval(100)
+        self._update_timer.setSingleShot(True)
+        self._update_timer.timeout.connect(self._update)
 
         self._build_plate_number = -1
 
@@ -23,9 +32,12 @@ class ObjectsModel(ListModel):
         self._build_plate_number = nr
         self._update()
 
+    def _updateDelayed(self, *args):
+        self._update_timer.start()
+
     def _update(self, *args):
         nodes = []
-        filter_current_build_plate = Preferences.getInstance().getValue("view/filter_current_build_plate")
+        filter_current_build_plate = Application.getInstance().getPreferences().getValue("view/filter_current_build_plate")
         active_build_plate_number = self._build_plate_number
         group_nr = 1
         for node in DepthFirstIterator(Application.getInstance().getController().getScene().getRoot()):

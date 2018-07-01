@@ -1,9 +1,14 @@
 # This PostProcessing Plugin script is released 
 # under the terms of the AGPLv3 or higher
+from typing import Optional, Tuple
 
+from UM.Logger import Logger
 from ..Script import Script
 
 class FilamentChange(Script):
+
+    _layer_keyword = ";LAYER:"
+
     def __init__(self):
         super().__init__()
 
@@ -27,18 +32,18 @@ class FilamentChange(Script):
                 "initial_retract":
                 {
                     "label": "Initial Retraction",
-                    "description": "Initial filament retraction distance",
+                    "description": "Initial filament retraction distance. The filament will be retracted with this amount before moving the nozzle away from the ongoing print.",
                     "unit": "mm",
                     "type": "float",
-                    "default_value": 300.0
+                    "default_value": 30.0
                 },
                 "later_retract":
                 {
                     "label": "Later Retraction Distance",
-                    "description": "Later filament retraction distance for removal",
+                    "description": "Later filament retraction distance for removal. The filament will be retracted all the way out of the printer so that you can change the filament.",
                     "unit": "mm",
                     "type": "float",
-                    "default_value": 30.0
+                    "default_value": 300.0
                 }
             }
         }"""
@@ -64,11 +69,26 @@ class FilamentChange(Script):
         if len(layer_targets) > 0:
             for layer_num in layer_targets:
                 layer_num = int(layer_num.strip())
-                if layer_num < len(data):
-                    layer = data[layer_num - 1]
-                    lines = layer.split("\n")
+                if layer_num <= len(data):
+                    index, layer_data = self._searchLayerData(data, layer_num - 1)
+                    if layer_data is None:
+                        Logger.log("e", "Could not found the layer")
+                        continue
+                    lines = layer_data.split("\n")
                     lines.insert(2, color_change)
                     final_line = "\n".join(lines)
-                    data[layer_num - 1] = final_line
+                    data[index] = final_line
 
         return data
+
+    ##  This method returns the data corresponding with the indicated layer number, looking in the gcode for
+    #   the occurrence of this layer number.
+    def _searchLayerData(self, data: list, layer_num: int) -> Tuple[int, Optional[str]]:
+        for index, layer_data in enumerate(data):
+            first_line = layer_data.split("\n")[0]
+            # The first line should contain the layer number at the beginning.
+            if first_line[:len(self._layer_keyword)] == self._layer_keyword:
+                # If found the layer that we are looking for, then return the data
+                if first_line[len(self._layer_keyword):] == str(layer_num):
+                    return index, layer_data
+        return 0, None

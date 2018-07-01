@@ -4,7 +4,7 @@
 from PyQt5.QtCore import Qt, pyqtSlot
 
 from UM.Qt.ListModel import ListModel
-
+from UM.Logger import Logger
 
 #
 # This the QML model for the quality management page.
@@ -35,7 +35,12 @@ class QualityManagementModel(ListModel):
         self._update()
 
     def _update(self):
+        Logger.log("d", "Updating {model_class_name}.".format(model_class_name = self.__class__.__name__))
+
         global_stack = self._machine_manager.activeMachine
+        if not global_stack:
+            self.setItems([])
+            return
 
         quality_group_dict = self._quality_manager.getQualityGroups(global_stack)
         quality_changes_group_dict = self._quality_manager.getQualityChangesGroups(global_stack)
@@ -59,14 +64,12 @@ class QualityManagementModel(ListModel):
                     "quality_changes_group": None}
             item_list.append(item)
         # Sort by quality names
-        item_list = sorted(item_list, key = lambda x: x["name"])
+        item_list = sorted(item_list, key = lambda x: x["name"].upper())
 
         # Create quality_changes group items
         quality_changes_item_list = []
         for quality_changes_group in quality_changes_group_dict.values():
-            if quality_changes_group.quality_type not in available_quality_types:
-                continue
-            quality_group = quality_group_dict[quality_changes_group.quality_type]
+            quality_group = quality_group_dict.get(quality_changes_group.quality_type)
             item = {"name": quality_changes_group.name,
                     "is_read_only": False,
                     "quality_group": quality_group,
@@ -74,7 +77,7 @@ class QualityManagementModel(ListModel):
             quality_changes_item_list.append(item)
 
         # Sort quality_changes items by names and append to the item list
-        quality_changes_item_list = sorted(quality_changes_item_list, key = lambda x: x["name"])
+        quality_changes_item_list = sorted(quality_changes_item_list, key = lambda x: x["name"].upper())
         item_list += quality_changes_item_list
 
         self.setItems(item_list)

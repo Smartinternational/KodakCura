@@ -4,8 +4,8 @@
 from PyQt5.QtCore import Qt, pyqtSignal, pyqtProperty
 
 from UM.Qt.ListModel import ListModel
-
-from .BaseMaterialsModel import BaseMaterialsModel
+from UM.Logger import Logger
+from cura.Machines.Models.BaseMaterialsModel import BaseMaterialsModel
 
 
 #
@@ -47,28 +47,43 @@ class BrandMaterialsModel(ListModel):
         self.addRoleName(self.MaterialsRole, "materials")
 
         self._extruder_position = 0
+        self._extruder_stack = None
 
         from cura.CuraApplication import CuraApplication
         self._machine_manager = CuraApplication.getInstance().getMachineManager()
         self._extruder_manager = CuraApplication.getInstance().getExtruderManager()
         self._material_manager = CuraApplication.getInstance().getMaterialManager()
 
-        self._machine_manager.globalContainerChanged.connect(self._update)
-        self._extruder_manager.activeExtruderChanged.connect(self._update)
-        self._material_manager.materialsUpdated.connect(self._update)
+        self._machine_manager.globalContainerChanged.connect(self._updateExtruderStack)
+        self._machine_manager.activeStackChanged.connect(self._update) #Update when switching machines.
+        self._material_manager.materialsUpdated.connect(self._update) #Update when the list of materials changes.
+        self._update()
 
+    def _updateExtruderStack(self):
+        global_stack = self._machine_manager.activeMachine
+        if global_stack is None:
+            return
+
+        if self._extruder_stack is not None:
+            self._extruder_stack.pyqtContainersChanged.disconnect(self._update)
+        self._extruder_stack = global_stack.extruders.get(str(self._extruder_position))
+        if self._extruder_stack is not None:
+            self._extruder_stack.pyqtContainersChanged.connect(self._update)
+        # Force update the model when the extruder stack changes
         self._update()
 
     def setExtruderPosition(self, position: int):
-        if self._extruder_position != position:
+        if self._extruder_stack is None or self._extruder_position != position:
             self._extruder_position = position
+            self._updateExtruderStack()
             self.extruderPositionChanged.emit()
 
-    @pyqtProperty(int, fset = setExtruderPosition, notify = extruderPositionChanged)
+    @pyqtProperty(int, fset=setExtruderPosition, notify=extruderPositionChanged)
     def extruderPosition(self) -> int:
         return self._extruder_position
 
     def _update(self):
+        Logger.log("d", "Updating {model_class_name}.".format(model_class_name = self.__class__.__name__))
         global_stack = self._machine_manager.activeMachine
         if global_stack is None:
             self.setItems([])
@@ -122,17 +137,17 @@ class BrandMaterialsModel(ListModel):
                 material_type_item["colors"].clear()
 
                 # Sort materials by name
-                material_list = sorted(material_list, key = lambda x: x["name"])
+                material_list = sorted(material_list, key = lambda x: x["name"].upper())
                 material_type_item["colors"].setItems(material_list)
 
                 material_type_item_list.append(material_type_item)
 
             # Sort material type by name
-            material_type_item_list = sorted(material_type_item_list, key = lambda x: x["name"])
+            material_type_item_list = sorted(material_type_item_list, key = lambda x: x["name"].upper())
             brand_item["materials"].setItems(material_type_item_list)
 
             brand_item_list.append(brand_item)
 
         # Sort brand by name
-        brand_item_list = sorted(brand_item_list, key = lambda x: x["name"])
+        brand_item_list = sorted(brand_item_list, key = lambda x: x["name"].upper())
         self.setItems(brand_item_list)
