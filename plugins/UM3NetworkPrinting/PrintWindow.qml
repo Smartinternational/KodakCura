@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Ultimaker B.V.
+// Copyright (c) 2018 Ultimaker B.V.
 // Cura is released under the terms of the LGPLv3 or higher.
 
 import QtQuick 2.2
@@ -20,8 +20,25 @@ UM.Dialog
 
     visible: true
     modality: Qt.ApplicationModal
+    onVisibleChanged:
+    {
+        if(visible)
+        {
+            resetPrintersModel()
+        }
+    }
+    title: catalog.i18nc("@title:window", "Print over network")
 
-    title: catalog.i18nc("@title:window","Print over network")
+    property var printersModel:  ListModel{}
+    function resetPrintersModel() {
+        printersModel.clear()
+        printersModel.append({ name: "Automatic", key: ""})
+
+        for (var index in OutputDevice.printers)
+        {
+            printersModel.append({name: OutputDevice.printers[index].name, key: OutputDevice.printers[index].key})
+        }
+    }
 
     Column
     {
@@ -32,7 +49,6 @@ UM.Dialog
         anchors.leftMargin: UM.Theme.getSize("default_margin").width
         anchors.rightMargin: UM.Theme.getSize("default_margin").width
         height: 50 * screenScaleFactor
-
         Label
         {
             id: manualPrinterSelectionLabel
@@ -42,7 +58,7 @@ UM.Dialog
                 topMargin: UM.Theme.getSize("default_margin").height
                 right: parent.right
             }
-            text: "Printer selection"
+            text: catalog.i18nc("@label", "Printer selection")
             wrapMode: Text.Wrap
             height: 20 * screenScaleFactor
         }
@@ -50,18 +66,12 @@ UM.Dialog
         ComboBox
         {
             id: printerSelectionCombobox
-            model: OutputDevice.printers
-            textRole: "friendly_name"
+            model: base.printersModel
+            textRole: "name"
 
             width: parent.width
             height: 40 * screenScaleFactor
             Behavior on height { NumberAnimation { duration: 100 } }
-
-            onActivated:
-            {
-                var printerData = OutputDevice.printers[index];
-                OutputDevice.selectPrinter(printerData.unique_name, printerData.friendly_name);
-            }
         }
 
         SystemPalette
@@ -79,8 +89,6 @@ UM.Dialog
             enabled: true
             onClicked: {
                 base.visible = false;
-                // reset to defaults
-                OutputDevice.selectAutomaticPrinter()
                 printerSelectionCombobox.currentIndex = 0
             }
         }
@@ -93,9 +101,8 @@ UM.Dialog
             enabled: true
             onClicked: {
                 base.visible = false;
-                OutputDevice.sendPrintJob();
+                OutputDevice.selectPrinter(printerSelectionCombobox.model.get(printerSelectionCombobox.currentIndex).key)
                 // reset to defaults
-                OutputDevice.selectAutomaticPrinter()
                 printerSelectionCombobox.currentIndex = 0
             }
         }

@@ -1,7 +1,7 @@
 // Copyright (c) 2017 Ultimaker B.V.
 // Uranium is released under the terms of the LGPLv3 or higher.
 
-import QtQuick 2.8
+import QtQuick 2.7
 import QtQuick.Controls 1.1
 import QtQuick.Controls.Styles 1.1
 import QtQuick.Layouts 1.2
@@ -15,10 +15,11 @@ Item
 {
     id: base;
 
-    property Action configureSettings;
-    property bool findingSettings;
-    signal showTooltip(Item item, point location, string text);
-    signal hideTooltip();
+    property QtObject settingVisibilityPresetsModel: CuraApplication.getSettingVisibilityPresetsModel()
+    property Action configureSettings
+    property bool findingSettings
+    signal showTooltip(Item item, point location, string text)
+    signal hideTooltip()
 
     Item
     {
@@ -57,13 +58,13 @@ Item
             height: UM.Theme.getSize("setting_control").height
             anchors.left: globalProfileLabel.right
             anchors.right: parent.right
-            tooltip: Cura.MachineManager.activeQualityName
+            tooltip: Cura.MachineManager.activeQualityOrQualityChangesName
             style: UM.Theme.styles.sidebar_header_button
             activeFocusOnPress: true
             menu: ProfileMenu { }
 
             function generateActiveQualityText () {
-                var result = Cura.MachineManager.activeQualityName;
+                var result = Cura.MachineManager.activeQualityOrQualityChangesName;
 
                 if (Cura.MachineManager.isActiveQualitySupported) {
                     if (Cura.MachineManager.activeQualityLayerHeight > 0) {
@@ -107,6 +108,45 @@ Item
         }
     }
 
+    ToolButton
+    {
+        id: settingVisibilityMenu
+
+        width: height
+        height: UM.Theme.getSize("setting_control").height
+        anchors
+        {
+            top: globalProfileRow.bottom
+            topMargin: UM.Theme.getSize("sidebar_margin").height
+            right: parent.right
+            rightMargin: UM.Theme.getSize("sidebar_margin").width
+        }
+        style: ButtonStyle
+        {
+            background: Item {
+                UM.RecolorImage {
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    width: UM.Theme.getSize("standard_arrow").width
+                    height: UM.Theme.getSize("standard_arrow").height
+                    sourceSize.width: width
+                    sourceSize.height: width
+                    color: control.enabled ? UM.Theme.getColor("setting_category_text") : UM.Theme.getColor("setting_category_disabled_text")
+                    source: UM.Theme.getIcon("menu")
+                }
+            }
+            label: Label{}
+        }
+        menu: SettingVisibilityPresetsMenu
+        {
+            onShowAllSettings:
+            {
+                definitionsModel.setAllVisible(true);
+                filter.updateDefinitionModel();
+            }
+        }
+    }
+
     Rectangle
     {
         id: filterContainer
@@ -132,9 +172,9 @@ Item
             top: globalProfileRow.bottom
             topMargin: UM.Theme.getSize("sidebar_margin").height
             left: parent.left
-            leftMargin: Math.round(UM.Theme.getSize("sidebar_margin").width)
-            right: parent.right
-            rightMargin: Math.round(UM.Theme.getSize("sidebar_margin").width)
+            leftMargin: UM.Theme.getSize("sidebar_margin").width
+            right: settingVisibilityMenu.left
+            rightMargin: Math.floor(UM.Theme.getSize("default_margin").width / 2)
         }
         height: visible ? UM.Theme.getSize("setting_control").height : 0
         Behavior on height { NumberAnimation { duration: 100 } }
@@ -142,7 +182,7 @@ Item
         TextField
         {
             id: filter;
-
+            height: parent.height
             anchors.left: parent.left
             anchors.right: clearFilterButton.left
             anchors.rightMargin: Math.round(UM.Theme.getSize("sidebar_margin").width)
@@ -166,19 +206,7 @@ Item
                 findingSettings = (text.length > 0);
                 if(findingSettings != lastFindingSettings)
                 {
-                    if(findingSettings)
-                    {
-                        expandedCategories = definitionsModel.expanded.slice();
-                        definitionsModel.expanded = ["*"];
-                        definitionsModel.showAncestors = true;
-                        definitionsModel.showAll = true;
-                    }
-                    else
-                    {
-                        definitionsModel.expanded = expandedCategories;
-                        definitionsModel.showAncestors = false;
-                        definitionsModel.showAll = false;
-                    }
+                    updateDefinitionModel();
                     lastFindingSettings = findingSettings;
                 }
             }
@@ -186,6 +214,27 @@ Item
             Keys.onEscapePressed:
             {
                 filter.text = "";
+            }
+
+            function updateDefinitionModel()
+            {
+                if(findingSettings)
+                {
+                    expandedCategories = definitionsModel.expanded.slice();
+                    definitionsModel.expanded = [""]; // keep categories closed while to prevent render while making settings visible one by one
+                    definitionsModel.showAncestors = true;
+                    definitionsModel.showAll = true;
+                    definitionsModel.expanded = ["*"];
+                }
+                else
+                {
+                    if(expandedCategories)
+                    {
+                        definitionsModel.expanded = expandedCategories;
+                    }
+                    definitionsModel.showAncestors = false;
+                    definitionsModel.showAll = false;
+                }
             }
         }
 
@@ -209,7 +258,7 @@ Item
 
             anchors.verticalCenter: parent.verticalCenter
             anchors.right: parent.right
-            anchors.rightMargin: Math.round(UM.Theme.getSize("sidebar_margin").width)
+            anchors.rightMargin: UM.Theme.getSize("default_margin").width
 
             color: UM.Theme.getColor("setting_control_button")
             hoverColor: UM.Theme.getColor("setting_control_button_hover")
@@ -374,7 +423,6 @@ Item
                     key: model.key ? model.key : ""
                     watchedProperties: [ "value", "enabled", "state", "validationState", "settable_per_extruder", "resolve" ]
                     storeIndex: 0
-                    // Due to the way setPropertyValue works, removeUnusedValue gives the correct output in case of resolve
                     removeUnusedValue: model.resolve == undefined
                 }
 
@@ -485,6 +533,15 @@ Item
                     onTriggered: Cura.MachineManager.copyValueToExtruders(contextMenu.key)
                 }
 
+                MenuItem
+                {
+                    //: Settings context menu action
+                    text: catalog.i18nc("@action:menu", "Copy all changed values to all extruders")
+                    visible: machineExtruderCount.properties.value > 1
+                    enabled: contextMenu.provider != undefined
+                    onTriggered: Cura.MachineManager.copyAllValuesToExtruders()
+                }
+
                 MenuSeparator
                 {
                     visible: machineExtruderCount.properties.value > 1
@@ -493,9 +550,17 @@ Item
                 MenuItem
                 {
                     //: Settings context menu action
-                    visible: !findingSettings;
+                    visible: !findingSettings
                     text: catalog.i18nc("@action:menu", "Hide this setting");
-                    onTriggered: definitionsModel.hide(contextMenu.key);
+                    onTriggered:
+                    {
+                        definitionsModel.hide(contextMenu.key);
+                        // visible settings have changed, so we're no longer showing a preset
+                        if (settingVisibilityPresetsModel.activePreset != "")
+                        {
+                            settingVisibilityPresetsModel.setActivePreset("custom");
+                        }
+                    }
                 }
                 MenuItem
                 {
@@ -511,7 +576,7 @@ Item
                             return catalog.i18nc("@action:menu", "Keep this setting visible");
                         }
                     }
-                    visible: findingSettings;
+                    visible: findingSettings
                     onTriggered:
                     {
                         if (contextMenu.settingVisible)
@@ -522,12 +587,17 @@ Item
                         {
                             definitionsModel.show(contextMenu.key);
                         }
+                        // visible settings have changed, so we're no longer showing a preset
+                        if (settingVisibilityPresetsModel.activePreset != "")
+                        {
+                            settingVisibilityPresetsModel.setActivePreset("custom");
+                        }
                     }
                 }
                 MenuItem
                 {
                     //: Settings context menu action
-                    text: catalog.i18nc("@action:menu", "Configure setting visiblity...");
+                    text: catalog.i18nc("@action:menu", "Configure setting visibility...");
 
                     onTriggered: Cura.Actions.configureSettingVisibility.trigger(contextMenu);
                 }
