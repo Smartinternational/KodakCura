@@ -1,28 +1,29 @@
-# Copyright (c) 2015 Ultimaker B.V.
+# Copyright (c) 2018 Ultimaker B.V.
 # Cura is released under the terms of the LGPLv3 or higher.
 
 import os.path
 import zipfile
 
+import numpy
+
+import Savitar
+
+from UM.Application import Application
 from UM.Logger import Logger
 from UM.Math.Matrix import Matrix
 from UM.Math.Vector import Vector
 from UM.Mesh.MeshBuilder import MeshBuilder
 from UM.Mesh.MeshReader import MeshReader
 from UM.Scene.GroupDecorator import GroupDecorator
-from cura.Settings.SettingOverrideDecorator import SettingOverrideDecorator
-from UM.Application import Application
+
 from cura.Settings.ExtruderManager import ExtruderManager
-from cura.QualityManager import QualityManager
 from cura.Scene.CuraSceneNode import CuraSceneNode
 from cura.Scene.BuildPlateDecorator import BuildPlateDecorator
 from cura.Scene.SliceableObjectDecorator import SliceableObjectDecorator
 from cura.Scene.ZOffsetDecorator import ZOffsetDecorator
+from cura.Machines.QualityManager import getMachineDefinitionIDForQualitySearch
 
 MYPY = False
-
-import Savitar
-import numpy
 
 try:
     if not MYPY:
@@ -37,10 +38,6 @@ class ThreeMFReader(MeshReader):
         super().__init__()
         self._supported_extensions = [".3mf"]
         self._root = None
-        self._namespaces = {
-            "3mf": "http://schemas.microsoft.com/3dmanufacturing/core/2015/02",
-            "cura": "http://software.ultimaker.com/xml/cura/3mf/2015/10"
-        }
         self._base_name = ""
         self._unit = None
         self._object_count = 0  # Used to name objects as there is no node name yet.
@@ -81,9 +78,9 @@ class ThreeMFReader(MeshReader):
         self._object_count += 1
         node_name = "Object %s" % self._object_count
 
-        active_build_plate = Application.getInstance().getBuildPlateModel().activeBuildPlate
+        active_build_plate = Application.getInstance().getMultiBuildPlateModel().activeBuildPlate
 
-        um_node = CuraSceneNode()
+        um_node = CuraSceneNode() # This adds a SettingOverrideDecorator
         um_node.addDecorator(BuildPlateDecorator(active_build_plate))
         um_node.setName(node_name)
         transformation = self._createMatrixFromTransformationString(savitar_node.getTransformation())
@@ -112,8 +109,6 @@ class ThreeMFReader(MeshReader):
 
         # Add the setting override decorator, so we can add settings to this node.
         if settings:
-            um_node.addDecorator(SettingOverrideDecorator())
-
             global_container_stack = Application.getInstance().getGlobalContainerStack()
 
             # Ensure the correct next container for the SettingOverride decorator is set.
@@ -124,8 +119,8 @@ class ThreeMFReader(MeshReader):
                     um_node.callDecoration("setActiveExtruder", default_stack.getId())
 
                 # Get the definition & set it
-                definition = QualityManager.getInstance().getParentMachineDefinition(global_container_stack.getBottom())
-                um_node.callDecoration("getStack").getTop().setDefinition(definition.getId())
+                definition_id = getMachineDefinitionIDForQualitySearch(global_container_stack.definition)
+                um_node.callDecoration("getStack").getTop().setDefinition(definition_id)
 
             setting_container = um_node.callDecoration("getStack").getTop()
 
@@ -142,7 +137,7 @@ class ThreeMFReader(MeshReader):
                     continue
                 setting_container.setProperty(key, "value", setting_value)
 
-        if len(um_node.getChildren()) > 0:
+        if len(um_node.getChildren()) > 0 and um_node.getMeshData() is None:
             group_decorator = GroupDecorator()
             um_node.addDecorator(group_decorator)
         um_node.setSelectable(True)
