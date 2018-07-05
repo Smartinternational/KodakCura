@@ -116,7 +116,7 @@ if not MYPY:
     try:
         from cura.CuraVersion import CuraVersion, CuraBuildType, CuraDebugMode
     except ImportError:
-        CuraVersion = "3.2"  # [CodeStyle: Reflecting imported value]
+        CuraVersion = "3.3"  # [CodeStyle: Reflecting imported value]
         CuraBuildType = ""
         CuraDebugMode = False
 
