@@ -48,7 +48,7 @@ class CuraContainerStack(ContainerStack):
         self._empty_material = self._container_registry.findInstanceContainers(id = "empty_material")[0] #type: InstanceContainer
         self._empty_variant = self._container_registry.findInstanceContainers(id = "empty_variant")[0] #type: InstanceContainer
 
-        self._containers = [self._empty_instance_container for i in range(len(_ContainerIndexes.IndexTypeMap))] #type: List[Union[InstanceContainer, DefinitionContainer]]
+        self._containers = [self._empty_instance_container for i in range(len(_ContainerIndexes.IndexTypeMap))] #type: List[ContainerInterface]
         self._containers[_ContainerIndexes.QualityChanges] = self._empty_quality_changes
         self._containers[_ContainerIndexes.Quality] = self._empty_quality
         self._containers[_ContainerIndexes.Material] = self._empty_material
@@ -57,7 +57,7 @@ class CuraContainerStack(ContainerStack):
         self.containersChanged.connect(self._onContainersChanged)
 
         import cura.CuraApplication #Here to prevent circular imports.
-        self.addMetaDataEntry("setting_version", cura.CuraApplication.CuraApplication.SettingVersion)
+        self.setMetaDataEntry("setting_version", cura.CuraApplication.CuraApplication.SettingVersion)
 
     # This is emitted whenever the containersChanged signal from the ContainerStack base class is emitted.
     pyqtContainersChanged = pyqtSignal()
@@ -244,8 +244,9 @@ class CuraContainerStack(ContainerStack):
     #
     #   \throws InvalidContainerStackError Raised when no definition can be found for the stack.
     @override(ContainerStack)
-    def deserialize(self, contents: str, file_name: Optional[str] = None) -> None:
-        super().deserialize(contents, file_name)
+    def deserialize(self, serialized: str, file_name: Optional[str] = None) -> str:
+        # update the serialized data first
+        serialized = super().deserialize(serialized, file_name)
 
         new_containers = self._containers.copy()
         while len(new_containers) < len(_ContainerIndexes.IndexTypeMap):
@@ -253,10 +254,11 @@ class CuraContainerStack(ContainerStack):
 
         # Validate and ensure the list of containers matches with what we expect
         for index, type_name in _ContainerIndexes.IndexTypeMap.items():
+            container = None
             try:
                 container = new_containers[index]
             except IndexError:
-                container = None
+                pass
 
             if type_name == "definition":
                 if not container or not isinstance(container, DefinitionContainer):
@@ -282,6 +284,9 @@ class CuraContainerStack(ContainerStack):
         if isinstance(new_containers[_ContainerIndexes.DefinitionChanges], type(self._empty_instance_container)):
             from cura.Settings.CuraStackBuilder import CuraStackBuilder
             CuraStackBuilder.createDefinitionChangesContainer(self, self.getId() + "_settings")
+
+        ## TODO; Deserialize the containers.
+        return serialized
 
     ## protected:
 

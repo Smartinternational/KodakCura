@@ -4,7 +4,7 @@
 from collections import defaultdict, OrderedDict
 import copy
 import uuid
-from typing import Dict
+from typing import Dict, cast
 from typing import Optional, TYPE_CHECKING
 
 from PyQt5.Qt import QTimer, QObject, pyqtSignal, pyqtSlot
@@ -366,20 +366,20 @@ class MaterialManager(QObject):
     #  1. the given machine doesn't have materials;
     #  2. cannot find any material InstanceContainers with the given settings.
     #
-    def getMaterialNodeByType(self, global_stack: "GlobalStack", extruder_variant_name: str, material_guid: str) -> Optional["MaterialNode"]:
+    def getMaterialNodeByType(self, global_stack: "GlobalStack", position: str, extruder_variant_name: str, material_guid: str) -> Optional["MaterialNode"]:
         node = None
         machine_definition = global_stack.definition
+        extruder_definition = global_stack.extruders[position].definition
         if parseBool(machine_definition.getMetaDataEntry("has_materials", False)):
-            material_diameter = machine_definition.getProperty("material_diameter", "value")
+            material_diameter = extruder_definition.getProperty("material_diameter", "value")
             if isinstance(material_diameter, SettingFunction):
                 material_diameter = material_diameter(global_stack)
 
             # Look at the guid to material dictionary
             root_material_id = None
             for material_group in self._guid_material_groups_map[material_guid]:
-                if material_group.is_read_only:
-                    root_material_id = material_group.root_material_node.metadata["id"]
-                    break
+                root_material_id = material_group.root_material_node.metadata["id"]
+                break
 
             if not root_material_id:
                 Logger.log("i", "Cannot find materials with guid [%s] ", material_guid)
@@ -413,11 +413,16 @@ class MaterialManager(QObject):
         else:
             return None
 
-    def getDefaultMaterial(self, global_stack: "GlobalStack", extruder_variant_name: Optional[str]) -> Optional["MaterialNode"]:
+    ##  Get default material for given global stack, extruder position and extruder variant name
+    #   you can provide the extruder_definition and then the position is ignored (useful when building up global stack in CuraStackBuilder)
+    def getDefaultMaterial(self, global_stack: "GlobalStack", position: str, extruder_variant_name: Optional[str], extruder_definition: Optional["DefinitionContainer"] = None) -> Optional["MaterialNode"]:
         node = None
         machine_definition = global_stack.definition
-        if parseBool(global_stack.getMetaDataEntry("has_materials", False)):
-            material_diameter = machine_definition.getProperty("material_diameter", "value")
+        if extruder_definition is None:
+            extruder_definition = global_stack.extruders[position].definition
+        if extruder_definition and parseBool(global_stack.getMetaDataEntry("has_materials", False)):
+            # At this point the extruder_definition is not None
+            material_diameter = extruder_definition.getProperty("material_diameter", "value")
             if isinstance(material_diameter, SettingFunction):
                 material_diameter = material_diameter(global_stack)
             approximate_material_diameter = str(round(material_diameter))
