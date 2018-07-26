@@ -1,0 +1,12 @@
+[general]
+version = 4
+name = Anton Quality V1
+definition = kodakportrait
+
+[metadata]
+quality_type = normal
+setting_version = 4
+type = quality_changes
+
+[values]
+
