@@ -240,7 +240,7 @@ Rectangle
                     elide: Text.ElideRight
                     color:
                     {
-                        if(control.pressed)
+                        if(control.pressed || control.checked)
                         {
                             return UM.Theme.getColor("action_button_active_text");
                         }
