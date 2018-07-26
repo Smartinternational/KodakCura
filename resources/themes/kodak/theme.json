@@ -282,7 +282,21 @@
         "layerview_move_combing": [0,  0,  255, 255],
         "layerview_move_retraction": [128,  128,  255, 255],
         "layerview_support_interface": [64, 192, 255, 255],
-        "layerview_nozzle": [181, 166, 66, 50]
+        "layerview_nozzle": [181, 166, 66, 50],
+		
+		"configuration_item": [255, 255, 255, 0],
+        "configuration_item_active": [12, 169, 227, 32],
+        "configuration_item_text": [0, 0, 0, 255],
+        "configuration_item_text_active": [0, 0, 0, 255],
+        "configuration_item_border": [127, 127, 127, 255],
+        "configuration_item_border_active": [12, 169, 227, 32],
+        "configuration_item_border_hover": [12, 169, 227, 255],
+		
+		"tab_status_connected": [12, 169, 227, 255],
+        "tab_status_disconnected": [200, 200, 200, 255],
+
+        "printer_config_matched": [12, 169, 227, 255],
+        "printer_config_mismatch": [127, 127, 127, 255]
     },
 
     "sizes": {

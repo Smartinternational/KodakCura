@@ -48,7 +48,7 @@ class QualityManager(QObject):
         self._machine_variant_material_quality_type_to_quality_dict = {}  # for quality lookup
         self._machine_quality_type_to_quality_changes_dict = {}  # for quality_changes lookup
 
-        self._default_machine_definition_id = "fdmprinter"
+        self._default_machine_definition_id = "kodakportrait"
 
         self._container_registry.containerMetaDataChanged.connect(self._onContainerMetadataChanged)
         self._container_registry.containerAdded.connect(self._onContainerMetadataChanged)
