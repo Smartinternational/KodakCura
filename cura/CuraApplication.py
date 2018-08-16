@@ -391,7 +391,7 @@ class CuraApplication(QtApplication):
         preferences.addPreference("cura/not_arrange_objects_on_load", False)
         preferences.addPreference("cura/use_multi_build_plate", False)
 
-        preferences.addPreference("cura/currency", "€")
+        preferences.addPreference("cura/currency", "$")
         preferences.addPreference("cura/material_settings", "{}")
 
         preferences.addPreference("view/invert_zoom", False)
