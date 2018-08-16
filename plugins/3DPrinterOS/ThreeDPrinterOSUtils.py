@@ -12,8 +12,8 @@ class ThreeDPrinterOSUtils(QObject):
     def __init__(self, parent=None):
         super(ThreeDPrinterOSUtils, self).__init__(parent)
         self._filePath = ""
-        self._cloudUrl = "https://cloud.3dprinteros.com/"
-        #self._cloudUrl = "https://acorn.3dprinteros.com/"
+        #self._cloudUrl = "https://cloud.3dprinteros.com/"
+        self._cloudUrl = "https://acorn.3dprinteros.com/"
         self._appDataFolder = os.path.join(QStandardPaths.writableLocation(QStandardPaths.AppDataLocation), "3DPrinterOS")
         self._sessionFile = os.path.join(self._appDataFolder, "session")
         self._qnam = QNetworkAccessManager()
