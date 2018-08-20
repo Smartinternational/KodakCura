@@ -9,7 +9,7 @@ Name "Kodak 3D Slicer ${VERSION}"
 OutFile "Kodak_3D_Slicer_${VERSION}.exe"
 
 ; The default installation directory
-InstallDir $PROGRAMFILES\Kodak_3D_Slicer
+InstallDir $PROGRAMFILES\Kodak_3D_Slicer_${VERSION}
 
 ; Registry key to check for directory (so if you install again, it will 
 ; overwrite the old one automatically)
@@ -110,6 +110,20 @@ Section "Install Visual Studio 2010 Redistributable"
       ExecWait '"$INSTDIR\vcredist_2010_20110908_x86.exe" /q /norestart'
 
 SectionEnd
+
+;Section "Install Arduino Drivers"
+  ; Set output path to the driver directory.
+;  SetOutPath "$INSTDIR\drivers\"
+;  File /r "drivers\"
+  
+;  ${If} ${RunningX64}
+;    IfSilent +2
+;      ExecWait '"$INSTDIR\drivers\dpinst64.exe" /lm'
+;  ${Else}
+;    IfSilent +2
+;      ExecWait '"$INSTDIR\drivers\dpinst32.exe" /lm'
+;  ${EndIf}
+;SectionEnd
 
 Section "Open STL files with Kodak 3D Slicer"
    ${registerExtension} "$INSTDIR\Kodak3DSlicer.exe" ".stl" "STL_File"
