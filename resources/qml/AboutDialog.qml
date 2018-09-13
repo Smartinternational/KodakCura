@@ -12,7 +12,7 @@ UM.Dialog
     id: base
 
     //: About dialog title
-    title: catalog.i18nc("@title:window","About Kodak 3D Slicer")
+    title: catalog.i18nc("@title:window","About KODAK 3D Slicer")
 
     minimumWidth: 500 * screenScaleFactor
     minimumHeight: 650 * screenScaleFactor
@@ -67,7 +67,7 @@ UM.Dialog
         width: parent.width
 
         //: About dialog application author note
-        text: catalog.i18nc("@info:credit","Kodak 3D Slicer is derived from Cura.\n\nKodak 3D Slicer proudly uses the following open source projects:")
+        text: catalog.i18nc("@info:credit","KODAK 3D Slicer is derived from Cura.\n\nKODAK 3D Slicer proudly uses the following open source projects:")
         font: UM.Theme.getFont("system")
         wrapMode: Text.WordWrap
         anchors.top: description.bottom
