@@ -157,6 +157,7 @@ Item {
                 currentIndex: -1
                 textRole: 'description'
                 editText: ""
+				enabled: false
                 model: printerTypeComboBoxModel
             }
 
@@ -405,7 +406,7 @@ Item {
                 Button {
                     id: closeBtn
                     x: 70
-                    y: 400
+                    y: 347
 
                     style: ButtonStyle {
                         background: Image {
@@ -429,9 +430,9 @@ Item {
                     onClicked: {
                         CloudAPI.getAuthToken(pluginRootWindow.sessionId, function(data) {
                             console.log(JSON.stringify(data));
-                            var url = pluginUtils.cloudUrl() + "myfiles";
+                            var url = pluginUtils.kodakUrl() + "myfiles";
                             if (data["result"] === true) {
-                                url = pluginUtils.cloudUrl() + "noauth/login_with_auth_token/" + data["message"];
+                                url = pluginUtils.kodakUrl() + "noauth/login_with_auth_token/" + data["message"];
                             }
                             pluginUtils.openUrl(url)
                         })
@@ -441,7 +442,7 @@ Item {
                 Button {
                     id: printBtn
                     x: 237
-                    y: 296
+                    y: 297
                     style: ButtonStyle {
                         background: Image {
                             source: "res/knopka_print.gif"
@@ -453,26 +454,6 @@ Item {
                             var url = pluginUtils.cloudUrl() + "quickprint?file_id=" + pluginRootWindow.fileId
                             if (data["result"] === true) {
                                 url = pluginUtils.cloudUrl() + "noauth/login_with_auth_token/" + data["message"] + "?redirect_url=" + encodeURIComponent("quickprint?file_id=" + pluginRootWindow.fileId);
-                            }
-                            pluginUtils.openUrl(url)
-                        })
-                    }
-                }
-
-                Button {
-                    id: queueBtn
-                    x: 70
-                    y: 347
-                    style: ButtonStyle {
-                        background: Image {
-                            source: "res/queue.gif"
-                        }
-                    }
-                    onClicked: {
-                        CloudAPI.getAuthToken(pluginRootWindow.sessionId, function(data) {
-                            var url = pluginUtils.cloudUrl() + "quickprint?industrial=yes&file_id=" + pluginRootWindow.fileId
-                           if (data["result"] === true) {
-                                url = pluginUtils.cloudUrl() + "noauth/login_with_auth_token/" + data["message"] + "?redirect_url=" + encodeURIComponent("quickprint?industrial=yes&file_id=" + pluginRootWindow.fileId);
                             }
                             pluginUtils.openUrl(url)
                         })

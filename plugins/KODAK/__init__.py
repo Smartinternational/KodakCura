@@ -1,7 +1,7 @@
 # Copyright (c) 2017 3DPrinterOS
 # Uranium is released under the terms of the LGPLv3 or higher.
 
-from . import ThreeDPrinterOSOutputDevicePlugin
+from . import KodakOutputDevicePlugin
 
 from UM.i18n import i18nCatalog
 catalog = i18nCatalog("uranium")
@@ -11,4 +11,4 @@ def getMetaData():
     }
 
 def register(app):
-    return { "output_device": ThreeDPrinterOSOutputDevicePlugin.ThreeDPrinterOSOutputDevicePlugin() }
+    return { "output_device": KodakOutputDevicePlugin.KodakOutputDevicePlugin() }

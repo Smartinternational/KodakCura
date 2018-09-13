@@ -7,13 +7,14 @@ from PyQt5.QtGui import QDesktopServices
 from UM.Logger import Logger
 
 
-class ThreeDPrinterOSUtils(QObject):
+class KodakUtils(QObject):
 
     def __init__(self, parent=None):
-        super(ThreeDPrinterOSUtils, self).__init__(parent)
+        super(KodakUtils, self).__init__(parent)
         self._filePath = ""
         #self._cloudUrl = "https://cloud.3dprinteros.com/"
         self._cloudUrl = "https://acorn.3dprinteros.com/"
+        self._kodakUrl = "https://kodak-dev-acorn.3dprinteros.com/"
         self._appDataFolder = os.path.join(QStandardPaths.writableLocation(QStandardPaths.AppDataLocation), "3DPrinterOS")
         self._sessionFile = os.path.join(self._appDataFolder, "session")
         self._qnam = QNetworkAccessManager()
@@ -34,6 +35,10 @@ class ThreeDPrinterOSUtils(QObject):
     @pyqtSlot(result=str)
     def cloudUrl(self):
         return self._cloudUrl
+
+    @pyqtSlot(result=str)
+    def kodakUrl(self):
+        return self._kodakUrl
 
     @pyqtSlot(result=str)
     def defaultFileName(self):
