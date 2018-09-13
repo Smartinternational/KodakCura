@@ -217,7 +217,7 @@
         "mode_switch_text_hover": [0, 0, 0, 255],
         "mode_switch_text_checked": [12, 169, 227, 255],
 
-        "tooltip": [237, 0, 0, 255],
+        "tooltip": [127, 127, 127, 255],
         "tooltip_text": [255, 255, 255, 255],
 
         "tool_button_border": [255, 255, 255, 0],
