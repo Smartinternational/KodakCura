@@ -39,7 +39,7 @@ class CuraActions(QObject):
 
     @pyqtSlot()
     def openBugReportPage(self):
-        event = CallFunctionEvent(self._openUrl, [QUrl("https://smart3d.tech/helpdesk/support-1/submit")], {})
+        event = CallFunctionEvent(self._openUrl, [QUrl("https://smart3d.tech/")], {})
         Application.getInstance().functionEvent(event)
 
     ##  Reset camera position and direction to default
