@@ -44,10 +44,12 @@ Item {
                 var printerTypeFounded = false
                 printerTypeComboBoxModel = data["message"]
                 if (printerTypeComboBoxModel.length > 0) {
-                    var printerType = Cura.MachineManager.activeMachineId.split(' #')[0];
-                    printerType += (printerType === "Dremel 3D45" || printerType === "Dremel 3D40") ? " Idea Builder" : ""
+                    //var printerType = Cura.MachineManager.activeMachineId.split(' #')[0];
+                    //printerType += (printerType === "Dremel 3D45" || printerType === "Dremel 3D40") ? " Idea Builder" : ""
+					var printerType = "KODAK Portrait"
                     for (var i = 0; i < printerTypeComboBoxModel.length; i++) {
                         if (printerTypeComboBoxModel[i]["description"] === printerType) {
+							// pluginRootWindow.showMessage(JSON.stringify(printerTypeComboBoxModel[i]))
                             printerTypeBox.currentIndex = i
                             printerTypeFounded = true
                         }
@@ -55,7 +57,7 @@ Item {
 
                     if (!printerTypeFounded) {
                         printerTypeBox.currentIndex = -1
-                        pluginRootWindow.showMessage("Warning: Selected printer (" + printerType + ") not found in the printer list. Please select manualy")
+                        pluginRootWindow.showMessage("Warning: Selected printer (" + printerType + ") not found in the printer list for upload.")
                     }
                 }
             } else {
@@ -212,7 +214,7 @@ Item {
             Button {
                 id: cancelBtn
                 x: 32
-                y: 480
+                y: 470
                 style: ButtonStyle {
                     background: Image {
                         source: "res/cancel_btn.gif"
@@ -224,7 +226,7 @@ Item {
             Button {
                 id: logoutBtn
                 x: 158
-                y: 480
+                y: 470
                 style: ButtonStyle {
                     background: Image {
                         source: "res/logout.gif"
@@ -248,7 +250,7 @@ Item {
                 id: uploadBtn
 
                 x: 289
-                y: 480
+                y: 470
 
                 style: ButtonStyle {
                     background: Image {
@@ -328,7 +330,7 @@ Item {
                 anchors.horizontalCenter: parent.horizontalCenter
                 width: 100
                 height: 100
-                color: "#e6e6e6"
+                color: pluginRootWindow.uploadStatus === "upload" ? "#e6e6e6" : "white"
                 radius: width / 2
                 Image {
                     id: statusImg
@@ -451,9 +453,9 @@ Item {
 
                     onClicked: {
                         CloudAPI.getAuthToken(pluginRootWindow.sessionId, function(data) {
-                            var url = pluginUtils.cloudUrl() + "quickprint?file_id=" + pluginRootWindow.fileId
+                            var url = pluginUtils.kodakUrl() + "myfiles#app=print;id=" + pluginRootWindow.fileId
                             if (data["result"] === true) {
-                                url = pluginUtils.cloudUrl() + "noauth/login_with_auth_token/" + data["message"] + "?redirect_url=" + encodeURIComponent("quickprint?file_id=" + pluginRootWindow.fileId);
+                                url = pluginUtils.kodakUrl() + "noauth/login_with_auth_token/" + data["message"] + "?redirect_url=" + encodeURIComponent("myfiles#app=print;id=" + pluginRootWindow.fileId);
                             }
                             pluginUtils.openUrl(url)
                         })
