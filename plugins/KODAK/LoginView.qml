@@ -54,9 +54,9 @@ Item {
 
     Button {
         id: cancelBtn
-      //  width: 119
-      //  height: 43
-        x: 91
+        width: 119
+        height: 43
+        x: 100
         y: 415
 
         style: ButtonStyle {
@@ -70,9 +70,9 @@ Item {
 
     Button {
         id: loginBtn
-    //    width: 119
-    //    height: 43
-        x: 211
+        width: 119
+        height: 43
+        x: 220
         y: 415
         style: ButtonStyle {
             background: Image {

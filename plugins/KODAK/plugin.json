@@ -2,7 +2,7 @@
     "name": "KODAK Uploader",
     "description": "Enables uploading and printing gcode to  https://kodak-dev-acorn.3dprinteros.com",
     "author": "3DPrinterOS",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "api": 4,
-    "i18n-catalog": "uranium"
+    "i18n-catalog": "cura"
 }
