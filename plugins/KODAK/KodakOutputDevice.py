@@ -31,7 +31,7 @@ from UM.Platform import Platform
 
 from UM.i18n import i18nCatalog
 
-catalog = i18nCatalog("uranium")
+catalog = i18nCatalog("cura")
 
 
 ##  Implements an OutputDevice that supports saving to arbitrary local files.

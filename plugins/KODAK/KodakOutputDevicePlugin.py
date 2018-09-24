@@ -6,7 +6,7 @@ from UM.OutputDevice.OutputDevicePlugin import OutputDevicePlugin
 from .KodakOutputDevice import KodakOutputDevice
 
 from UM.i18n import i18nCatalog
-catalog = i18nCatalog("uranium")
+catalog = i18nCatalog("cura")
 
 
 ##  Implements an OutputDevicePlugin that provides a single instance of ThreeDPrinterOSOutputDevice

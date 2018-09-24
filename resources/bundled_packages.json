@@ -1404,5 +1404,22 @@
                 "website": "https://ultimaker.com"
             }
         }
+    },
+	"KODAK": {
+        "package_info": {
+            "package_id": "KODAK",
+            "package_type": "plugin",
+            "display_name": "KODAK Cloud Intergration",
+            "description": "Enables uploading and printing gcode to  https://kodak-dev-acorn.3dprinteros.com",
+            "package_version": "1.2.0",
+            "sdk_version": 4,
+            "website": "https://www.3dprinteros.com/how-it-works/",
+            "author": {
+                "author_id": "3DPrinterOS",
+                "display_name": "3DPrinterOS",
+                "email": "support@3dprinteros.com",
+                "website": "https://www.3dprinteros.com/how-it-works/"
+            }
+        }
     }
 }

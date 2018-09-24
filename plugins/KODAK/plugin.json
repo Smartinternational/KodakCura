@@ -1,5 +1,5 @@
 {
-    "name": "KODAK Uploader",
+    "name": "KODAK Cloud Intergration",
     "description": "Enables uploading and printing gcode to  https://kodak-dev-acorn.3dprinteros.com",
     "author": "3DPrinterOS",
     "version": "1.2.0",
