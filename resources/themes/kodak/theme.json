@@ -4,50 +4,65 @@
     },
     "fonts": {
         "large": {
-            "size": 1.25,
-            "bold": true,
-            "family": "Open Sans"
+            "size": 1.35,
+            "weight": 63,
+            "family": "Noto Sans"
         },
         "large_nonbold": {
-            "size": 1.25,
-            "family": "Open Sans"
+            "size": 1.35,
+            "weight": 50,
+            "family": "Noto Sans"
+        },
+        "medium": {
+            "size": 1.16,
+            "weight": 50,
+            "family": "Noto Sans"
+        },
+        "medium_bold": {
+            "size": 1.16,
+            "weight": 63,
+            "family": "Noto Sans"
         },
         "default": {
-            "size": 1.15,
-            "family": "Open Sans"
+            "size": 1.0,
+            "weight": 50,
+            "family": "Noto Sans"
         },
         "default_bold": {
-            "size": 1.15,
-            "bold": true,
-            "family": "Open Sans"
+            "size": 1.0,
+            "weight": 63,
+            "family": "Noto Sans"
         },
         "default_italic": {
             "size": 1.15,
+            "weight": 50,
             "italic": true,
-            "family": "Open Sans"
+            "family": "Noto Sans"
         },
         "small": {
             "size": 1.0,
-            "bold": true,
-            "family": "Open Sans"
+            "weight": 63,
+            "family": "Noto Sans"
         },
         "very_small": {
             "size": 1.0,
-            "family": "Open Sans"
+            "weight": 50,
+            "family": "Noto Sans"
         },
         "button_tooltip": {
             "size": 1.0,
-            "family": "Open Sans"
+            "weight": 50,
+            "family": "Noto Sans"
         },
         "setting_category": {
             "size": 1.15,
-            "bold": true,
-            "family": "Open Sans"
+            "weight": 63,
+            "family": "Noto Sans"
         },
         "action_button": {
             "size": 1.15,
-            "bold": true,
-            "family": "Open Sans"
+            "weight": 50,
+            "family": "Noto Sans"
         }
     },
 
@@ -57,7 +72,7 @@
         "viewport_overlay": [0, 0, 0, 192],
 
         "primary": [255, 183, 0, 255],
-        "primary_hover": [48, 182, 231, 255],
+        "primary_hover": [237, 0, 0, 255],
         "primary_text": [255, 255, 255, 255],
         "border": [127, 127, 127, 255],
         "secondary": [245, 245, 245, 255],
@@ -76,6 +91,7 @@
         "text_hover": [70, 84, 113, 255],
         "text_pressed": [237, 0, 0, 255],
         "text_subtext": [0, 0, 0, 255],
+		"text_medium": [128, 128, 128, 255],
         "text_emphasis": [255, 255, 255, 255],
         "text_scene": [0, 0, 0, 255],
         "text_scene_hover": [70, 84, 113, 255],
