@@ -34,12 +34,12 @@ class CuraActions(QObject):
         # Starting a web browser from a signal handler connected to a menu will crash on windows.
         # So instead, defer the call to the next run of the event loop, since that does work.
         # Note that weirdly enough, only signal handlers that open a web browser fail like that.
-        event = CallFunctionEvent(self._openUrl, [QUrl("https://www.smart3d.tech/")], {})
+        event = CallFunctionEvent(self._openUrl, [QUrl("https://support.smart3d.tech/")], {})
         Application.getInstance().functionEvent(event)
 
     @pyqtSlot()
     def openBugReportPage(self):
-        event = CallFunctionEvent(self._openUrl, [QUrl("https://smart3d.tech/")], {})
+        event = CallFunctionEvent(self._openUrl, [QUrl("https://support.smart3d.tech/")], {})
         Application.getInstance().functionEvent(event)
 
     ##  Reset camera position and direction to default
