@@ -1,7 +1,7 @@
 .pragma library
 
- //var api_url = "https://cloud.3dprinteros.com/apiglobal/"
-var api_url = "https://acorn.3dprinteros.com/apiglobal/"
+var api_url = "https://cloud.3dprinteros.com/apiglobal/"
+//var api_url = "https://acorn.3dprinteros.com/apiglobal/"
 
 function login(username, passwd, callback) {
     var loginUrl = api_url + "login",
