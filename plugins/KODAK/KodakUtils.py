@@ -15,7 +15,7 @@ class KodakUtils(QObject):
         #self._cloudUrl = "https://cloud.3dprinteros.com/"
         self._cloudUrl = "https://acorn.3dprinteros.com/"
         self._kodakUrl = "https://kodak-dev-acorn.3dprinteros.com/"
-        self._appDataFolder = os.path.join(QStandardPaths.writableLocation(QStandardPaths.AppDataLocation), "3DPrinterOS")
+        self._appDataFolder = os.path.join(QStandardPaths.writableLocation(QStandardPaths.AppDataLocation), "KODAK")
         self._sessionFile = os.path.join(self._appDataFolder, "session")
         self._qnam = QNetworkAccessManager()
         self._qnam.finished.connect(self.finishedSlot)
