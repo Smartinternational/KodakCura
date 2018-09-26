@@ -86,8 +86,10 @@ Item {
                 pluginRootWindow.showBusy()
                 CloudAPI.login(loginField.text, passwdField.text, function(data) {
                     if (data["result"] === true) {
-                        pluginRootWindow.sessionId = data["message"]["session"]
-                        pluginUtils.saveSession(pluginRootWindow.sessionId)
+						var session = data["message"]["session"]
+						pluginUtils.saveSession(session)
+                        pluginRootWindow.sessionId = session
+                        
                     } else {
                         pluginRootWindow.showMessage("Error: " + data["message"])
                     }

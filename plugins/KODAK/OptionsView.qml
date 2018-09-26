@@ -342,6 +342,8 @@ Item {
                                 return "res/bad.gif"
                             case "good":
                                 return "res/ok.gif"
+							default:
+								return "res/ok.gif"
                             }
                     visible: pluginRootWindow.uploadStatus !== "upload"
                 }
