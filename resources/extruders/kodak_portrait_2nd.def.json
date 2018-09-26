@@ -17,6 +17,6 @@
         },
         
         "machine_nozzle_offset_x": { "default_value": 0.0 },
-        "machine_nozzle_offset_y": { "default_value": 28.0 }
+        "machine_nozzle_offset_y": { "default_value": 0.0 }
     }
 }
