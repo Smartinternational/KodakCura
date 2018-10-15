@@ -1069,6 +1069,7 @@ class MachineManager(QObject):
             if empty_quality_changes:
                 self._global_container_stack.extruders[str(position)].qualityChanges = self._empty_quality_changes_container
 
+
         self.activeQualityGroupChanged.emit()
         self.activeQualityChangesGroupChanged.emit()
 
@@ -1104,6 +1105,7 @@ class MachineManager(QObject):
 
         for position, extruder in self._global_container_stack.extruders.items():
             quality_changes_node = quality_changes_group.nodes_for_extruders.get(position)
+
             quality_node = None
             if quality_group is not None:
                 quality_node = quality_group.nodes_for_extruders.get(position)
@@ -1118,10 +1120,15 @@ class MachineManager(QObject):
             extruder.quality = quality_container
             extruder.qualityChanges = quality_changes_container
 
+            material_id = quality_changes_container.getMetaDataEntry("material")
+            if material_id is not None:
+                self.setMaterialById(position, material_id)
+
         self._current_quality_group = quality_group
         self._current_quality_changes_group = quality_changes_group
         self.activeQualityGroupChanged.emit()
         self.activeQualityChangesGroupChanged.emit()
+        self.activeMaterialChanged.emit()
 
     def _setVariantNode(self, position, container_node):
         if container_node.getContainer() is None:
