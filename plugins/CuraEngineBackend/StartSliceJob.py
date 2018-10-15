@@ -362,8 +362,10 @@ class StartSliceJob(Job):
     def _buildGlobalSettingsMessage(self, stack):
         settings = self._buildReplacementTokens(stack)
 
+        # format
+        start_gcode = settings["machine_start_gcode"].replace("\\n", "\n")
+        settings["machine_start_gcode"] = start_gcode
         # Pre-compute material material_bed_temp_prepend and material_print_temp_prepend
-        start_gcode = settings["machine_start_gcode"]
         bed_temperature_settings = ["material_bed_temperature", "material_bed_temperature_layer_0"]
         pattern = r"\{(%s)(,\s?\w+)?\}" % "|".join(bed_temperature_settings) # match {setting} as well as {setting, extruder_nr}
         settings["material_bed_temp_prepend"] = re.search(pattern, start_gcode) == None
@@ -378,6 +380,8 @@ class StartSliceJob(Job):
 
         settings["machine_start_gcode"] = self._expandGcodeTokens(settings["machine_start_gcode"], initial_extruder_nr)
         settings["machine_end_gcode"] = self._expandGcodeTokens(settings["machine_end_gcode"], initial_extruder_nr)
+
+        settings["machine_end_gcode"] = settings["machine_end_gcode"].replace("\\n", "\n")
 
         # Add all sub-messages for each individual setting.
         for key, value in settings.items():
