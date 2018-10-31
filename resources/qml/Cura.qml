@@ -8,7 +8,7 @@ import QtQuick.Layouts 1.1
 import QtQuick.Dialogs 1.2
 
 import UM 1.3 as UM
-import Cura 1.0 as Cura
+import Cura 1.1 as Cura
 
 import "Menus"
 
@@ -21,7 +21,6 @@ UM.MainWindow
     property bool showPrintMonitor: false
 
     backgroundColor: UM.Theme.getColor("viewport_background")
-
     // This connection is here to support legacy printer output devices that use the showPrintMonitor signal on Application to switch to the monitor stage
     // It should be phased out in newer plugin versions.
     Connections
@@ -104,11 +103,13 @@ UM.MainWindow
                 title: catalog.i18nc("@title:menu menubar:toplevel","&File");
                 MenuItem
                 {
+                    id: newProjectMenu
                     action: Cura.Actions.newProject;
                 }
 
                 MenuItem
                 {
+                    id: openMenu
                     action: Cura.Actions.open;
                 }
 
@@ -120,7 +121,7 @@ UM.MainWindow
                     text: catalog.i18nc("@title:menu menubar:file","&Save...")
                     onTriggered:
                     {
-                        var args = { "filter_by_machine": false, "file_type": "workspace", "preferred_mimetype": "application/x-curaproject+xml" };
+                        var args = { "filter_by_machine": false, "file_type": "workspace", "preferred_mimetypes": "application/vnd.ms-package.3dmanufacturing-3dmodel+xml" };
                         if(UM.Preferences.getValue("cura/dialog_on_project_save"))
                         {
                             saveWorkspaceDialog.args = args;
@@ -142,21 +143,26 @@ UM.MainWindow
                     onTriggered:
                     {
                         var localDeviceId = "local_file";
-                        UM.OutputDeviceManager.requestWriteToDevice(localDeviceId, PrintInformation.jobName, { "filter_by_machine": false, "preferred_mimetype": "application/vnd.ms-package.3dmanufacturing-3dmodel+xml"});
+                        UM.OutputDeviceManager.requestWriteToDevice(localDeviceId, PrintInformation.jobName, { "filter_by_machine": false, "preferred_mimetypes": "application/vnd.ms-package.3dmanufacturing-3dmodel+xml"});
                     }
                 }
 
                 MenuItem
                 {
+                    id: exportSelectionMenu
                     text: catalog.i18nc("@action:inmenu menubar:file", "Export Selection...");
                     enabled: UM.Selection.hasSelection;
                     iconName: "document-save-as";
-                    onTriggered: UM.OutputDeviceManager.requestWriteSelectionToDevice("local_file", PrintInformation.jobName, { "filter_by_machine": false, "preferred_mimetype": "application/vnd.ms-package.3dmanufacturing-3dmodel+xml"});
+                    onTriggered: UM.OutputDeviceManager.requestWriteSelectionToDevice("local_file", PrintInformation.jobName, { "filter_by_machine": false, "preferred_mimetypes": "application/vnd.ms-package.3dmanufacturing-3dmodel+xml"});
                 }
 
                 MenuSeparator { }
 
-                MenuItem { action: Cura.Actions.reloadAll; }
+                MenuItem
+                {
+                    id: reloadAllMenu
+                    action: Cura.Actions.reloadAll;
+                }
 
                 MenuSeparator { }
 
@@ -189,7 +195,7 @@ UM.MainWindow
                 id: settingsMenu
                 title: catalog.i18nc("@title:menu", "&Settings")
 
-                PrinterMenu { title: catalog.i18nc("@title:menu menubar:toplevel", "&Printer") }
+                PrinterMenu { title: catalog.i18nc("@title:menu menubar:settings", "&Printer") }
 
                 Instantiator
                 {
@@ -231,9 +237,9 @@ UM.MainWindow
                     onObjectRemoved: settingsMenu.removeItem(object)
                 }
 
-                // TODO Temporary hidden, add back again when feature ready
-//                BuildplateMenu { title: catalog.i18nc("@title:menu", "&Build plate"); visible: Cura.MachineManager.hasVariantBuildplates }
-                ProfileMenu { title: catalog.i18nc("@title:menu", "&Profile"); }
+                // TODO Only show in dev mode. Remove check when feature ready
+                BuildplateMenu { title: catalog.i18nc("@title:menu", "&Build plate"); visible: CuraSDKVersion == "dev" ? Cura.MachineManager.hasVariantBuildplates : false }
+                ProfileMenu { title: catalog.i18nc("@title:settings", "&Profile"); }
 
                 MenuSeparator { }
 
@@ -284,6 +290,7 @@ UM.MainWindow
 
             Menu
             {
+                id: preferencesMenu
                 title: catalog.i18nc("@title:menu menubar:toplevel","P&references");
 
                 MenuItem { action: Cura.Actions.preferences; }
@@ -291,7 +298,7 @@ UM.MainWindow
 
             Menu
             {
-                //: Help menu
+                id: helpMenu
                 title: catalog.i18nc("@title:menu menubar:toplevel","&Help");
 
                 MenuItem { action: Cura.Actions.showProfileFolder; }
@@ -306,7 +313,7 @@ UM.MainWindow
         {
             id: machineExtruderCount
 
-            containerStackId: Cura.MachineManager.activeMachineId
+            containerStack: Cura.MachineManager.activeMachine
             key: "machine_extruder_count"
             watchedProperties: [ "value" ]
             storeIndex: 0
@@ -541,7 +548,7 @@ UM.MainWindow
 
             insertPage(2, catalog.i18nc("@title:tab", "Printers"), Qt.resolvedUrl("Preferences/MachinesPage.qml"));
 
-            insertPage(3, catalog.i18nc("@title:tab", "Materials"), Qt.resolvedUrl("Preferences/MaterialsPage.qml"));
+            insertPage(3, catalog.i18nc("@title:tab", "Materials"), Qt.resolvedUrl("Preferences/Materials/MaterialsPage.qml"));
 
             insertPage(4, catalog.i18nc("@title:tab", "Profiles"), Qt.resolvedUrl("Preferences/ProfilesPage.qml"));
 
@@ -1054,7 +1061,7 @@ UM.MainWindow
             {
                 restart();
             }
-            else if(Cura.MachineManager.activeMachineId == null || Cura.MachineManager.activeMachineId == "")
+            else if(Cura.MachineManager.activeMachine == null)
             {
                 addMachineDialog.open();
             }

@@ -20,13 +20,6 @@ SettingItem
 
         anchors.fill: parent
 
-        MouseArea
-        {
-            anchors.fill: parent
-            acceptedButtons: Qt.NoButton
-            onWheel: wheel.accepted = true
-        }
-
         background: Rectangle
         {
             color:
@@ -80,6 +73,7 @@ SettingItem
             anchors.right: downArrow.left
 
             text: control.currentText
+            textFormat: Text.PlainText
             renderType: Text.NativeRendering
             font: UM.Theme.getFont("default")
             color: !enabled ? UM.Theme.getColor("setting_control_disabled_text") : UM.Theme.getColor("setting_control_text")
@@ -122,6 +116,7 @@ SettingItem
                 anchors.rightMargin: UM.Theme.getSize("setting_unit_margin").width
 
                 text: modelData.value
+                textFormat: Text.PlainText
                 renderType: Text.NativeRendering
                 color: control.contentItem.color
                 font: UM.Theme.getFont("default")

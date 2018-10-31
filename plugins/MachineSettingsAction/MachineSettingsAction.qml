@@ -16,6 +16,8 @@ Cura.MachineAction
     property var extrudersModel: Cura.ExtrudersModel{}
     property int extruderTabsCount: 0
 
+    property var activeMachineId: Cura.MachineManager.activeMachine != null ? Cura.MachineManager.activeMachine.id : ""
+
     Connections
     {
         target: base.extrudersModel
@@ -403,7 +405,15 @@ Cura.MachineAction
                             {
                                 if (settingsTabs.currentIndex > 0)
                                 {
-                                    manager.updateMaterialForDiameter(settingsTabs.currentIndex - 1);
+                                    manager.updateMaterialForDiameter(settingsTabs.currentIndex - 1)
+                                }
+                            }
+                            function setValueFunction(value)
+                            {
+                                if (settingsTabs.currentIndex > 0)
+                                {
+                                    const extruderIndex = index.toString()
+                                    Cura.MachineManager.activeMachine.extruders[extruderIndex].compatibleMaterialDiameter = value
                                 }
                             }
                             property bool isExtruderSetting: true
@@ -431,6 +441,18 @@ Cura.MachineAction
                             property bool isExtruderSetting: true
                             property bool forceUpdateOnChange: true
                             property bool allowNegative: true
+                        }
+
+                        Loader
+                        {
+                            id: extruderCoolingFanNumberField
+                            sourceComponent: numericTextFieldWithUnit
+                            property string settingKey: "machine_extruder_cooling_fan_number"
+                            property string label: catalog.i18nc("@label", "Cooling Fan Number")
+                            property string unit: catalog.i18nc("@label", "")
+                            property bool isExtruderSetting: true
+                            property bool forceUpdateOnChange: true
+                            property bool allowNegative: false
                         }
 
                         Item { width: UM.Theme.getSize("default_margin").width; height: UM.Theme.getSize("default_margin").height }
@@ -511,7 +533,7 @@ Cura.MachineAction
                         }
                         return "";
                     }
-                    return Cura.MachineManager.activeMachineId;
+                    return base.activeMachineId
                 }
                 key: settingKey
                 watchedProperties: [ "value", "description" ]
@@ -550,6 +572,7 @@ Cura.MachineAction
             property bool _forceUpdateOnChange: (typeof(forceUpdateOnChange) === 'undefined') ? false : forceUpdateOnChange
             property string _label: (typeof(label) === 'undefined') ? "" : label
             property string _tooltip: (typeof(tooltip) === 'undefined') ? propertyProvider.properties.description : tooltip
+            property var _setValueFunction: (typeof(setValueFunction) === 'undefined') ? undefined : setValueFunction
 
             UM.SettingPropertyProvider
             {
@@ -564,7 +587,7 @@ Cura.MachineAction
                         }
                         return "";
                     }
-                    return Cura.MachineManager.activeMachineId;
+                    return base.activeMachineId
                 }
                 key: settingKey
                 watchedProperties: [ "value", "description" ]
@@ -602,14 +625,32 @@ Cura.MachineAction
                         {
                             if (propertyProvider && text != propertyProvider.properties.value)
                             {
-                                propertyProvider.setPropertyValue("value", text);
+                                // For some properties like the extruder-compatible material diameter, they need to
+                                // trigger many updates, such as the available materials, the current material may
+                                // need to be switched, etc. Although setting the diameter can be done directly via
+                                // the provider, all the updates that need to be triggered then need to depend on
+                                // the metadata update, a signal that can be fired way too often. The update functions
+                                // can have if-checks to filter out the irrelevant updates, but still it incurs unnecessary
+                                // overhead.
+                                // The ExtruderStack class has a dedicated function for this call "setCompatibleMaterialDiameter()",
+                                // and it triggers the diameter update signals only when it is needed. Here it is optionally
+                                // choose to use setCompatibleMaterialDiameter() or other more specific functions that
+                                // are available.
+                                if (_setValueFunction !== undefined)
+                                {
+                                    _setValueFunction(text)
+                                }
+                                else
+                                {
+                                    propertyProvider.setPropertyValue("value", text)
+                                }
                                 if(_forceUpdateOnChange)
                                 {
-                                    manager.forceUpdate();
+                                    manager.forceUpdate()
                                 }
                                 if(_afterOnEditingFinished)
                                 {
-                                    _afterOnEditingFinished();
+                                    _afterOnEditingFinished()
                                 }
                             }
                         }
@@ -655,7 +696,7 @@ Cura.MachineAction
                         }
                         return "";
                     }
-                    return Cura.MachineManager.activeMachineId;
+                    return base.activeMachineId
                 }
                 key: settingKey
                 watchedProperties: [ "value", "options", "description" ]
@@ -754,7 +795,7 @@ Cura.MachineAction
                         }
                         return "";
                     }
-                    return Cura.MachineManager.activeMachineId;
+                    return base.activeMachineId
                 }
                 key: settingKey
                 watchedProperties: [ "value", "description" ]
@@ -879,7 +920,7 @@ Cura.MachineAction
     {
         id: machineExtruderCountProvider
 
-        containerStackId: Cura.MachineManager.activeMachineId
+        containerStackId: base.activeMachineId
         key: "machine_extruder_count"
         watchedProperties: [ "value", "description" ]
         storeIndex: manager.containerIndex
@@ -889,7 +930,7 @@ Cura.MachineAction
     {
         id: machineHeadPolygonProvider
 
-        containerStackId: Cura.MachineManager.activeMachineId
+        containerStackId: base.activeMachineId
         key: "machine_head_with_fans_polygon"
         watchedProperties: [ "value" ]
         storeIndex: manager.containerIndex
