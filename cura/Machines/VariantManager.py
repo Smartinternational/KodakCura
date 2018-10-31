@@ -1,7 +1,6 @@
 # Copyright (c) 2018 Ultimaker B.V.
 # Cura is released under the terms of the LGPLv3 or higher.
 
-from enum import Enum
 from collections import OrderedDict
 from typing import Optional, TYPE_CHECKING
 
@@ -11,18 +10,11 @@ from UM.Settings.ContainerRegistry import ContainerRegistry
 from UM.Util import parseBool
 
 from cura.Machines.ContainerNode import ContainerNode
+from cura.Machines.VariantType import VariantType, ALL_VARIANT_TYPES
 from cura.Settings.GlobalStack import GlobalStack
 
 if TYPE_CHECKING:
     from UM.Settings.DefinitionContainer import DefinitionContainer
-
-
-class VariantType(Enum):
-    BUILD_PLATE = "buildplate"
-    NOZZLE = "nozzle"
-
-
-ALL_VARIANT_TYPES = (VariantType.BUILD_PLATE, VariantType.NOZZLE)
 
 
 #
@@ -123,17 +115,24 @@ class VariantManager:
 
     #
     # Gets the default variant for the given machine definition.
+    # If the optional GlobalStack is given, the metadata information will be fetched from the GlobalStack instead of
+    # the DefinitionContainer. Because for machines such as UM2, you can enable Olsson Block, which will set
+    # "has_variants" to True in the GlobalStack. In those cases, we need to fetch metadata from the GlobalStack or
+    # it may not be correct.
     #
     def getDefaultVariantNode(self, machine_definition: "DefinitionContainer",
-                              variant_type: VariantType) -> Optional["ContainerNode"]:
+                              variant_type: "VariantType",
+                              global_stack: Optional["GlobalStack"] = None) -> Optional["ContainerNode"]:
         machine_definition_id = machine_definition.getId()
+        container_for_metadata_fetching = global_stack if global_stack is not None else machine_definition
+
         preferred_variant_name = None
         if variant_type == VariantType.BUILD_PLATE:
-            if parseBool(machine_definition.getMetaDataEntry("has_variant_buildplates", False)):
-                preferred_variant_name = machine_definition.getMetaDataEntry("preferred_variant_buildplate_name")
+            if parseBool(container_for_metadata_fetching.getMetaDataEntry("has_variant_buildplates", False)):
+                preferred_variant_name = container_for_metadata_fetching.getMetaDataEntry("preferred_variant_buildplate_name")
         else:
-            if parseBool(machine_definition.getMetaDataEntry("has_variants", False)):
-                preferred_variant_name = machine_definition.getMetaDataEntry("preferred_variant_name")
+            if parseBool(container_for_metadata_fetching.getMetaDataEntry("has_variants", False)):
+                preferred_variant_name = container_for_metadata_fetching.getMetaDataEntry("preferred_variant_name")
 
         node = None
         if preferred_variant_name:

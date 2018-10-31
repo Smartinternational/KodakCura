@@ -9,9 +9,8 @@ import UM 1.1 as UM
 Item
 {
     id: page
-    property var details: base.selection
+    property var details: base.selection || {}
     anchors.fill: parent
-    width: parent.width
     ToolboxBackColumn
     {
         id: sidebar
@@ -32,7 +31,7 @@ Item
             width: UM.Theme.getSize("toolbox_thumbnail_medium").width
             height: UM.Theme.getSize("toolbox_thumbnail_medium").height
             fillMode: Image.PreserveAspectFit
-            source: details.icon_url || "../images/logobot.svg"
+            source: details === null ? "" : (details.icon_url || "../images/logobot.svg")
             mipmap: true
             anchors
             {
@@ -55,7 +54,7 @@ Item
                 rightMargin: UM.Theme.getSize("wide_margin").width
                 bottomMargin: UM.Theme.getSize("default_margin").height
             }
-            text: details.name || ""
+            text: details === null ? "" : (details.name || "")
             font: UM.Theme.getFont("large")
             color: UM.Theme.getColor("text")
             wrapMode: Text.WordWrap
@@ -114,7 +113,7 @@ Item
             height: childrenRect.height
             Label
             {
-                text: details.version || catalog.i18nc("@label", "Unknown")
+                text: details === null ? "" : (details.version || catalog.i18nc("@label", "Unknown"))
                 font: UM.Theme.getFont("very_small")
                 color: UM.Theme.getColor("text")
             }
@@ -122,6 +121,10 @@ Item
             {
                 text:
                 {
+                    if (details === null)
+                    {
+                        return ""
+                    }
                     var date = new Date(details.last_updated)
                     return date.toLocaleString(UM.Preferences.getValue("general/language"))
                 }
@@ -132,6 +135,10 @@ Item
             {
                 text:
                 {
+                    if (details === null)
+                    {
+                        return ""
+                    }
                     if (details.author_email)
                     {
                         return "<a href=\"mailto:" + details.author_email+"?Subject=Cura: " + details.name + "\">" + details.author_name + "</a>"
@@ -148,7 +155,7 @@ Item
             }
             Label
             {
-                text: details.download_count || catalog.i18nc("@label", "Unknown")
+                text: details === null ? "" : (details.download_count || catalog.i18nc("@label", "Unknown"))
                 font: UM.Theme.getFont("very_small")
                 color: UM.Theme.getColor("text")
             }
