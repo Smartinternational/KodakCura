@@ -3,7 +3,6 @@
     "version": 2,
     "name": "Extruder 2",
     "inherits": "fdmextruder",
-	
     "metadata": {
         "machine": "kodakportrait",
 		"material_color": "#056d01",
