@@ -82,9 +82,9 @@ class KodakOutputDevice(OutputDevice):
     def _createDialogue(self):
         qml_file = QUrl.fromLocalFile(
             os.path.join(PluginRegistry.getInstance().getPluginPath(self._pluginId), "PluginMain.qml"))
-        component = QQmlComponent(Application.getInstance()._engine, qml_file)
+        component = QQmlComponent(Application.getInstance()._qml_engine, qml_file)
 
-        Application.getInstance()._engine.rootContext().setContextProperty("pluginUtils", self.pluginUtils)
+        Application.getInstance()._qml_engine.rootContext().setContextProperty("pluginUtils", self.pluginUtils)
 
         return component.create()
 
