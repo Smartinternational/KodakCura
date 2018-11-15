@@ -172,18 +172,18 @@ class Toolbox(QObject, Extension):
         self._cloud_api_version = self._getCloudAPIVersion()
         self._cloud_api_root = self._getCloudAPIRoot()
         self._api_url = "{cloud_api_root}/cura-packages/v{cloud_api_version}/cura/v{sdk_version}".format(
-            cloud_api_root=self._cloud_api_root,
-            cloud_api_version=self._cloud_api_version,
-            sdk_version=self._sdk_version
+            cloud_api_root = self._cloud_api_root,
+            cloud_api_version = self._cloud_api_version,
+            sdk_version = self._sdk_version
         )
         self._request_urls = {
-            "authors": QUrl("{base_url}/authors".format(base_url=self._api_url)),
-            "packages": QUrl("{base_url}/packages".format(base_url=self._api_url)),
-            "plugins_showcase": QUrl("{base_url}/showcase".format(base_url=self._api_url)),
-            "plugins_available": QUrl("{base_url}/packages?package_type=plugin".format(base_url=self._api_url)),
-            "materials_showcase": QUrl("{base_url}/showcase".format(base_url=self._api_url)),
-            "materials_available": QUrl("{base_url}/packages?package_type=material".format(base_url=self._api_url)),
-            "materials_generic": QUrl("{base_url}/packages?package_type=material&tags=generic".format(base_url=self._api_url))
+            "authors": QUrl("{base_url}/authors".format(base_url = self._api_url)),
+            "packages": QUrl("{base_url}/packages".format(base_url = self._api_url)),
+            "plugins_showcase": QUrl("{base_url}/showcase".format(base_url = self._api_url)),
+            "plugins_available": QUrl("{base_url}/packages?package_type=plugin".format(base_url = self._api_url)),
+            "materials_showcase": QUrl("{base_url}/showcase".format(base_url = self._api_url)),
+            "materials_available": QUrl("{base_url}/packages?package_type=material".format(base_url = self._api_url)),
+            "materials_generic": QUrl("{base_url}/packages?package_type=material&tags=generic".format(base_url = self._api_url))
         }
 
     # Get the API root for the packages API depending on Cura version settings.
@@ -209,11 +209,11 @@ class Toolbox(QObject, Extension):
     # Get the packages version depending on Cura version settings.
     def _getSDKVersion(self) -> Union[int, str]:
         if not hasattr(cura, "CuraVersion"):
-            return self._plugin_registry.APIVersion
+            return self._application.getAPIVersion().getMajor()
         if not hasattr(cura.CuraVersion, "CuraSDKVersion"):  # type: ignore
-            return self._plugin_registry.APIVersion
+            return self._application.getAPIVersion().getMajor()
         if not cura.CuraVersion.CuraSDKVersion:  # type: ignore
-            return self._plugin_registry.APIVersion
+            return self._application.getAPIVersion().getMajor()
         return cura.CuraVersion.CuraSDKVersion  # type: ignore
 
     @pyqtSlot()
@@ -245,7 +245,7 @@ class Toolbox(QObject, Extension):
             self._dialog = self._createDialog("Toolbox.qml")
 
         if not self._dialog:
-            Logger.log("e", "Unexpected error trying to create the 'Toolbox' dialog.")
+            Logger.log("e", "Unexpected error trying to create the 'Marketplace' dialog.")
             return
 
         self._dialog.show()
@@ -254,7 +254,7 @@ class Toolbox(QObject, Extension):
         self.enabledChanged.emit()
 
     def _createDialog(self, qml_name: str) -> Optional[QObject]:
-        Logger.log("d", "Toolbox: Creating dialog [%s].", qml_name)
+        Logger.log("d", "Marketplace: Creating dialog [%s].", qml_name)
         plugin_path = PluginRegistry.getInstance().getPluginPath(self.getPluginId())
         if not plugin_path:
             return None
@@ -262,24 +262,28 @@ class Toolbox(QObject, Extension):
         
         dialog = self._application.createQmlComponent(path, {"toolbox": self})
         if not dialog:
-            raise Exception("Failed to create toolbox dialog")
+            raise Exception("Failed to create Marketplace dialog")
         return dialog
 
-    def _convertPluginMetadata(self, plugin: Dict[str, Any]) -> Dict[str, Any]:
-        formatted = {
-            "package_id": plugin["id"],
-            "package_type": "plugin",
-            "display_name": plugin["plugin"]["name"],
-            "package_version": plugin["plugin"]["version"],
-            "sdk_version": plugin["plugin"]["api"],
-            "author": {
-                "author_id": plugin["plugin"]["author"],
-                "display_name": plugin["plugin"]["author"]
-            },
-            "is_installed": True,
-            "description": plugin["plugin"]["description"]
-        }
-        return formatted
+    def _convertPluginMetadata(self, plugin_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        try:
+            formatted = {
+                "package_id": plugin_data["id"],
+                "package_type": "plugin",
+                "display_name": plugin_data["plugin"]["name"],
+                "package_version": plugin_data["plugin"]["version"],
+                "sdk_version": plugin_data["plugin"]["api"],
+                "author": {
+                    "author_id": plugin_data["plugin"]["author"],
+                    "display_name": plugin_data["plugin"]["author"]
+                },
+                "is_installed": True,
+                "description": plugin_data["plugin"]["description"]
+            }
+            return formatted
+        except:
+            Logger.log("w", "Unable to convert plugin meta data %s", str(plugin_data))
+            return None
 
     @pyqtSlot()
     def _updateInstalledModels(self) -> None:
@@ -295,11 +299,13 @@ class Toolbox(QObject, Extension):
         for plugin_id in old_plugin_ids:
             # Neither the installed packages nor the packages that are scheduled to remove are old plugins
             if plugin_id not in installed_package_ids and plugin_id not in scheduled_to_remove_package_ids:
-                Logger.log('i', 'Found a plugin that was installed with the old plugin browser: %s', plugin_id)
+                Logger.log("i", "Found a plugin that was installed with the old plugin browser: %s", plugin_id)
 
                 old_metadata = self._plugin_registry.getMetaData(plugin_id)
                 new_metadata = self._convertPluginMetadata(old_metadata)
-
+                if new_metadata is None:
+                    # Something went wrong converting it.
+                    continue
                 self._old_plugin_ids.add(plugin_id)
                 self._old_plugin_metadata[new_metadata["package_id"]] = new_metadata
 
@@ -505,7 +511,10 @@ class Toolbox(QObject, Extension):
         # version, we also need to check if the current one has a lower SDK version. If so, this package should also
         # be upgradable.
         elif remote_version == local_version:
-            can_upgrade = local_package.get("sdk_version", 0) < remote_package.get("sdk_version", 0)
+            # First read sdk_version_semver. If that doesn't exist, read just sdk_version (old version system).
+            remote_sdk_version = Version(remote_package.get("sdk_version_semver", remote_package.get("sdk_version", 0)))
+            local_sdk_version = Version(local_package.get("sdk_version_semver", local_package.get("sdk_version", 0)))
+            can_upgrade = local_sdk_version < remote_sdk_version
 
         return can_upgrade
 
@@ -578,7 +587,7 @@ class Toolbox(QObject, Extension):
     # Make API Calls
     # --------------------------------------------------------------------------
     def _makeRequestByType(self, type: str) -> None:
-        Logger.log("i", "Toolbox: Requesting %s metadata from server.", type)
+        Logger.log("i", "Marketplace: Requesting %s metadata from server.", type)
         request = QNetworkRequest(self._request_urls[type])
         request.setRawHeader(*self._request_header)
         if self._network_manager:
@@ -586,7 +595,7 @@ class Toolbox(QObject, Extension):
 
     @pyqtSlot(str)
     def startDownload(self, url: str) -> None:
-        Logger.log("i", "Toolbox: Attempting to download & install package from %s.", url)
+        Logger.log("i", "Marketplace: Attempting to download & install package from %s.", url)
         url = QUrl(url)
         self._download_request = QNetworkRequest(url)
         if hasattr(QNetworkRequest, "FollowRedirectsAttribute"):
@@ -603,7 +612,7 @@ class Toolbox(QObject, Extension):
 
     @pyqtSlot()
     def cancelDownload(self) -> None:
-        Logger.log("i", "Toolbox: User cancelled the download of a package.")
+        Logger.log("i", "Marketplace: User cancelled the download of a package.")
         self.resetDownload()
 
     def resetDownload(self) -> None:
@@ -690,7 +699,7 @@ class Toolbox(QObject, Extension):
 
                             return
                         except json.decoder.JSONDecodeError:
-                            Logger.log("w", "Toolbox: Received invalid JSON for %s.", type)
+                            Logger.log("w", "Marketplace: Received invalid JSON for %s.", type)
                             break
                     else:
                         self.setViewPage("errored")
@@ -717,10 +726,10 @@ class Toolbox(QObject, Extension):
                 self._onDownloadComplete(file_path)
 
     def _onDownloadComplete(self, file_path: str) -> None:
-        Logger.log("i", "Toolbox: Download complete.")
+        Logger.log("i", "Marketplace: Download complete.")
         package_info = self._package_manager.getPackageInfo(file_path)
         if not package_info:
-            Logger.log("w", "Toolbox: Package file [%s] was not a valid CuraPackage.", file_path)
+            Logger.log("w", "Marketplace: Package file [%s] was not a valid CuraPackage.", file_path)
             return
 
         license_content = self._package_manager.getPackageLicense(file_path)
@@ -819,7 +828,7 @@ class Toolbox(QObject, Extension):
     @pyqtSlot(str, str, str)
     def filterModelByProp(self, model_type: str, filter_type: str, parameter: str) -> None:
         if not self._models[model_type]:
-            Logger.log("w", "Toolbox: Couldn't filter %s model because it doesn't exist.", model_type)
+            Logger.log("w", "Marketplace: Couldn't filter %s model because it doesn't exist.", model_type)
             return
         self._models[model_type].setFilter({filter_type: parameter})
         self.filterChanged.emit()
@@ -827,7 +836,7 @@ class Toolbox(QObject, Extension):
     @pyqtSlot(str, "QVariantMap")
     def setFilters(self, model_type: str, filter_dict: dict) -> None:
         if not self._models[model_type]:
-            Logger.log("w", "Toolbox: Couldn't filter %s model because it doesn't exist.", model_type)
+            Logger.log("w", "Marketplace: Couldn't filter %s model because it doesn't exist.", model_type)
             return
         self._models[model_type].setFilter(filter_dict)
         self.filterChanged.emit()
@@ -835,7 +844,7 @@ class Toolbox(QObject, Extension):
     @pyqtSlot(str)
     def removeFilters(self, model_type: str) -> None:
         if not self._models[model_type]:
-            Logger.log("w", "Toolbox: Couldn't remove filters on %s model because it doesn't exist.", model_type)
+            Logger.log("w", "Marketplace: Couldn't remove filters on %s model because it doesn't exist.", model_type)
             return
         self._models[model_type].setFilter({})
         self.filterChanged.emit()
@@ -845,6 +854,7 @@ class Toolbox(QObject, Extension):
     def buildMaterialsModels(self) -> None:
         self._metadata["materials_showcase"] = []
         self._metadata["materials_available"] = []
+        self._metadata["materials_generic"] = []
 
         processed_authors = [] # type: List[str]
 
