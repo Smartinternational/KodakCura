@@ -25,10 +25,6 @@ UM.PointingRectangle {
     width: valueLabel.width + UM.Theme.getSize("default_margin").width
     visible: false
 
-    // make sure the text field is focussed when pressing the parent handle
-    // needed to connect the key bindings when switching active handle
-    onVisibleChanged: if (visible) valueLabel.forceActiveFocus()
-
     color: UM.Theme.getColor("tool_panel_background")
     borderColor: UM.Theme.getColor("lining")
     borderWidth: UM.Theme.getSize("default_lining").width
@@ -48,12 +44,11 @@ UM.PointingRectangle {
         id: valueLabel
 
         anchors {
-            left: parent.left
-            leftMargin: Math.round(UM.Theme.getSize("default_margin").width / 2)
             verticalCenter: parent.verticalCenter
+            horizontalCenter: parent.horizontalCenter
         }
 
-        width: maximumValue.toString().length * 12 * screenScaleFactor
+        width: ((maximumValue + 1).toString().length + 1) * 10 * screenScaleFactor
         text: sliderLabelRoot.value + startFrom // the current handle value, add 1 because layers is an array
         horizontalAlignment: TextInput.AlignRight
 

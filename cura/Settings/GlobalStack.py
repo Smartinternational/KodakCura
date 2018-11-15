@@ -4,7 +4,7 @@
 from collections import defaultdict
 import threading
 from typing import Any, Dict, Optional, Set, TYPE_CHECKING
-from PyQt5.QtCore import pyqtProperty
+from PyQt5.QtCore import pyqtProperty, pyqtSlot
 
 from UM.Decorators import override
 from UM.MimeTypeDatabase import MimeType, MimeTypeDatabase
@@ -13,6 +13,10 @@ from UM.Settings.SettingInstance import InstanceState
 from UM.Settings.ContainerRegistry import ContainerRegistry
 from UM.Settings.Interfaces import PropertyEvaluationContext
 from UM.Logger import Logger
+from UM.Resources import Resources
+from UM.Platform import Platform
+from UM.Util import parseBool
+
 import cura.CuraApplication
 
 from . import Exceptions
@@ -20,6 +24,7 @@ from .CuraContainerStack import CuraContainerStack
 
 if TYPE_CHECKING:
     from cura.Settings.ExtruderStack import ExtruderStack
+
 
 ##  Represents the Global or Machine stack and its related containers.
 #
@@ -54,6 +59,16 @@ class GlobalStack(CuraContainerStack):
         if configuration_type == "machine":
             return "machine_stack"
         return configuration_type
+
+    def getBuildplateName(self) -> Optional[str]:
+        name = None
+        if self.variant.getId() != "empty_variant":
+            name = self.variant.getName()
+        return name
+
+    @pyqtProperty(str, constant = True)
+    def preferred_output_file_formats(self) -> str:
+        return self.getMetaDataEntry("file_formats")
 
     ##  Add an extruder to the list of extruders of this stack.
     #
@@ -96,6 +111,9 @@ class GlobalStack(CuraContainerStack):
 
         # Handle the "resolve" property.
         #TODO: Why the hell does this involve threading?
+        # Answer: Because if multiple threads start resolving properties that have the same underlying properties that's
+        # related, without taking a note of which thread a resolve paths belongs to, they can bump into each other and
+        # generate unexpected behaviours.
         if self._shouldResolve(key, property_name, context):
             current_thread = threading.current_thread()
             self._resolving_settings[current_thread.name].add(key)
@@ -172,6 +190,43 @@ class GlobalStack(CuraContainerStack):
                 return False
         return True
 
+    def getHeadAndFansCoordinates(self):
+        return self.getProperty("machine_head_with_fans_polygon", "value")
+
+    def getHasMaterials(self) -> bool:
+        return parseBool(self.getMetaDataEntry("has_materials", False))
+
+    def getHasVariants(self) -> bool:
+        return parseBool(self.getMetaDataEntry("has_variants", False))
+
+    def getHasMachineQuality(self) -> bool:
+        return parseBool(self.getMetaDataEntry("has_machine_quality", False))
+
+    ##  Get default firmware file name if one is specified in the firmware
+    @pyqtSlot(result = str)
+    def getDefaultFirmwareName(self) -> str:
+        machine_has_heated_bed = self.getProperty("machine_heated_bed", "value")
+
+        baudrate = 250000
+        if Platform.isLinux():
+            # Linux prefers a baudrate of 115200 here because older versions of
+            # pySerial did not support a baudrate of 250000
+            baudrate = 115200
+
+        # If a firmware file is available, it should be specified in the definition for the printer
+        hex_file = self.getMetaDataEntry("firmware_file", None)
+        if machine_has_heated_bed:
+            hex_file = self.getMetaDataEntry("firmware_hbk_file", hex_file)
+
+        if not hex_file:
+            Logger.log("w", "There is no firmware for machine %s.", self.getBottom().id)
+            return ""
+
+        try:
+            return Resources.getPath(cura.CuraApplication.CuraApplication.ResourceTypes.Firmware, hex_file.format(baudrate=baudrate))
+        except FileNotFoundError:
+            Logger.log("w", "Firmware file %s not found.", hex_file)
+            return ""
 
 ## private:
 global_stack_mime = MimeType(

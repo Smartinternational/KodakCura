@@ -1,5 +1,5 @@
 // Copyright (c) 2018 Ultimaker B.V.
-// Toolbox is released under the terms of the LGPLv3 or higher.
+// Cura is released under the terms of the LGPLv3 or higher.
 
 import QtQuick 2.7
 import QtQuick.Controls 1.4
@@ -9,7 +9,7 @@ import UM 1.1 as UM
 
 Rectangle
 {
-    property int packageCount: toolbox.viewCategory == "material" ? toolbox.getTotalNumberOfPackagesByAuthor(model.id) : 1
+    property int packageCount: toolbox.viewCategory == "material" ? toolbox.getTotalNumberOfMaterialPackagesByAuthor(model.id) : 1
     property int installedPackages: toolbox.viewCategory == "material" ? toolbox.getNumberOfInstalledPackagesByAuthor(model.id) : (toolbox.isInstalled(model.id) ? 1 : 0)
     id: tileBase
     width: UM.Theme.getSize("toolbox_thumbnail_large").width + (2 * UM.Theme.getSize("default_lining").width)
@@ -105,8 +105,21 @@ Rectangle
             switch(toolbox.viewCategory)
             {
                 case "material":
-                    toolbox.viewPage = "author"
-                    toolbox.filterModelByProp("packages", "author_name", model.name)
+
+                    // If model has a type, it must be a package
+                    if (model.type !== undefined)
+                    {
+                        toolbox.viewPage = "detail"
+                        toolbox.filterModelByProp("packages", "id", model.id)
+                    }
+                    else
+                    {
+                        toolbox.viewPage = "author"
+                        toolbox.setFilters("packages", {
+                            "author_id": model.id,
+                            "type": "material"
+                        })
+                    }
                     break
                 default:
                     toolbox.viewPage = "detail"

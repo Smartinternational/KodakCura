@@ -81,12 +81,12 @@ Item {
                 text: PrintInformation.jobName
                 horizontalAlignment: TextInput.AlignRight
                 onEditingFinished: {
-                    var new_name = text == "" ? catalog.i18nc("@text Print job name", "unnamed") : text;
+                    var new_name = text == "" ? catalog.i18nc("@text Print job name", "Untitled") : text;
                     PrintInformation.setJobName(new_name, true);
                     printJobTextfield.focus = false;
                 }
                 validator: RegExpValidator {
-                    regExp: /^[^\\ \/ \*\?\|\[\]]*$/
+                    regExp: /^[^\\\/\*\?\|\[\]]*$/
                 }
                 style: TextFieldStyle{
                     textColor: UM.Theme.getColor("text_scene");
