@@ -1,6 +1,7 @@
 # Copyright (c) 2016 Ultimaker B.V.
 # Uranium is released under the terms of the LGPLv3 or higher.
 
+from UM.Application import Application
 from UM.Preferences import Preferences
 from UM.OutputDevice.OutputDevicePlugin import OutputDevicePlugin
 from .KodakOutputDevice import KodakOutputDevice
@@ -14,8 +15,8 @@ class KodakOutputDevicePlugin(OutputDevicePlugin):
     def __init__(self):
         super().__init__()
 
-        Preferences.getInstance().addPreference("kodak/last_used_type", "")
-        Preferences.getInstance().addPreference("kodak/dialog_save_path", "")
+        Application.getInstance().getPreferences().addPreference("kodak/last_used_type", "")
+        Application.getInstance().getPreferences().addPreference("kodak/dialog_save_path", "")
 
     def start(self):
         self.getOutputDeviceManager().addOutputDevice(KodakOutputDevice(self.getPluginId()))
