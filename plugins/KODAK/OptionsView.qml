@@ -46,10 +46,10 @@ Item {
                 if (printerTypeComboBoxModel.length > 0) {
                     //var printerType = Cura.MachineManager.activeMachineId.split(' #')[0];
                     //printerType += (printerType === "Dremel 3D45" || printerType === "Dremel 3D40") ? " Idea Builder" : ""
-					var printerType = "KODAK Portrait"
+                    var printerType = "KODAK Portrait"
                     for (var i = 0; i < printerTypeComboBoxModel.length; i++) {
                         if (printerTypeComboBoxModel[i]["description"] === printerType) {
-							// pluginRootWindow.showMessage(JSON.stringify(printerTypeComboBoxModel[i]))
+                            // pluginRootWindow.showMessage(JSON.stringify(printerTypeComboBoxModel[i]))
                             printerTypeBox.currentIndex = i
                             printerTypeFounded = true
                         }
@@ -105,6 +105,19 @@ Item {
                 fileNameField.text = pluginUtils.defaultFileName() 
             }
 
+            signal logouted()
+            signal errorCatched(string error)
+
+            onLogouted: {
+                pluginUtils.clearSession()
+                pluginRootWindow.hideBusy()
+                pluginRootWindow.sessionId = ""
+            }
+
+            onErrorCatched: {
+                pluginRootWindow.showMessage(error)
+            }
+
             Text {
                 id: fileNameLabel
                 x: 24
@@ -136,7 +149,6 @@ Item {
 
                 Component.onCompleted: {
                     fileNameField.text = pluginUtils.defaultFileName()
-                    pluginUtils.qmlLog("defaultFileName: " + fileNameField.text)
                 }
             }
 
@@ -159,7 +171,7 @@ Item {
                 currentIndex: -1
                 textRole: 'description'
                 editText: ""
-				enabled: false
+                enabled: false
                 model: printerTypeComboBoxModel
             }
 
@@ -237,21 +249,17 @@ Item {
                     pluginRootWindow.showBusy()
                     CloudAPI.logout(pluginRootWindow.sessionId, function(data) {
                         if (data["result"] === false) {
-                            pluginRootWindow.showMessage("Error. " + data["message"])
+                            optionView.errorCatched("Error. " + data["message"])
                         }
-                        pluginRootWindow.sessionId = ""
-                        pluginUtils.clearSession()
-                        pluginRootWindow.hideBusy()
+                        optionView.logouted()
                     })
                 }
             }
 
             Button {
                 id: uploadBtn
-
                 x: 289
                 y: 470
-
                 style: ButtonStyle {
                     background: Image {
                         source: "res/upload_btn.gif"
@@ -264,9 +272,7 @@ Item {
                         pluginRootWindow.showMessage("Error. File name is empty")
                         return
                     }
-                    
-                    //*, "", | , :
-                    
+
                     if (fileName.indexOf(":") !== -1 || fileName.indexOf('"') !== -1  || fileName.indexOf("|") !== -1 || fileName.indexOf("*") !== -1) {
                         pluginRootWindow.showMessage("Error. File name can't contain \*, \"\", | , : symbols")
                         return
@@ -332,6 +338,7 @@ Item {
                 height: 100
                 color: pluginRootWindow.uploadStatus === "upload" ? "#e6e6e6" : "white"
                 radius: width / 2
+
                 Image {
                     id: statusImg
                     anchors.centerIn: parent
@@ -342,8 +349,8 @@ Item {
                                 return "res/bad.gif"
                             case "good":
                                 return "res/ok.gif"
-							default:
-								return "res/ok.gif"
+                            default:
+                                return "res/ok.gif"
                             }
                     visible: pluginRootWindow.uploadStatus !== "upload"
                 }

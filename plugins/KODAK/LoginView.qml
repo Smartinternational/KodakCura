@@ -10,7 +10,18 @@ Item {
     width: 440
     height: 540
 
-    signal loginPressed(string login, string passwd)
+    signal logined(string sessionId)
+    signal errorCatched(string error)
+
+    onLogined: {
+        pluginUtils.saveSession(sessionId)
+        pluginRootWindow.hideBusy()
+        pluginRootWindow.sessionId = sessionId
+    }
+
+    onErrorCatched: {
+        pluginRootWindow.showMessage("Error: " + data["message"])
+    }
 
     Image {
         anchors.fill: parent
@@ -81,19 +92,15 @@ Item {
         }
 
         onClicked: {
-            pluginUtils.qmlLog("login")
             if (loginField.text !== "" && passwdField.text !== "") {
                 pluginRootWindow.showBusy()
                 CloudAPI.login(loginField.text, passwdField.text, function(data) {
                     if (data["result"] === true) {
-						var session = data["message"]["session"]
-						pluginUtils.saveSession(session)
-                        pluginRootWindow.sessionId = session
-                        
+                        var session = data["message"]["session"]
+                        loginView.logined(session)
                     } else {
-                        pluginRootWindow.showMessage("Error: " + data["message"])
+                        loginView.errorCatced("Error: " + data["message"])
                     }
-                    pluginRootWindow.hideBusy()
                 })
             }
         }
