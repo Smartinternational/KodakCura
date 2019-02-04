@@ -43,7 +43,8 @@ Button
         Label
         {
             anchors.centerIn: parent;
-            text: index + 1;
+//             text: index + 1;
+            text: index === 0 ? 2 : index
             color: parent.enabled ? UM.Theme.getColor("button_text") : UM.Theme.getColor("button_disabled_text")
             font: UM.Theme.getFont("default_bold");
         }
