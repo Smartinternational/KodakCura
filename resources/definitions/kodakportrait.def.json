@@ -30,9 +30,10 @@
     "machine_extruder_count": { "default_value": 2 },
     "machine_heated_bed": { "default_value": true },
     "machine_height": { "default_value": 235 },
-    "machine_depth": { "default_value": 200 },
-    "machine_width": { "default_value": 200 },
+    "machine_depth": { "default_value": 210 },
+    "machine_width": { "default_value": 260 },
     "layer_height": { "default_value": 0.2 },
-    "speed_print": { "default_value": 75 }
+    "speed_print": { "default_value": 75 },
+    "machine_use_extruder_offset_to_offset_coords": { "default_value": false }
   }
 }
