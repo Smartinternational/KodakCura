@@ -1584,5 +1584,22 @@
                 "website": "https://www.3dprinteros.com/how-it-works/"
             }
         }
+    },
+    "KodakUpdateChecker": {
+        "package_info": {
+            "package_id": "KodakUpdateChecker",
+            "package_type": "plugin",
+            "display_name": "KODAK Update Checker",
+            "description": "Checks for updates of the software.",
+            "package_version": "1.0.0",
+            "sdk_version": 4,
+            "website": "https://www.3dprinteros.com/how-it-works/",
+            "author": {
+                "author_id": "3DPrinterOS",
+                "display_name": "3DPrinterOS",
+                "email": "support@3dprinteros.com",
+                "website": "https://www.3dprinteros.com/how-it-works/"
+            }
+        }
     }
 }

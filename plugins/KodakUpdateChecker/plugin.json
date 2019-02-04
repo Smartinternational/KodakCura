@@ -1,0 +1,8 @@
+{
+    "name": "KODAK Update Checker",
+    "author": "3DPrinterOS.",
+    "version": "1.0.0",
+    "description": "Checks for updates of the software.",
+    "api": 5,
+    "i18n-catalog": "uranium"
+}
