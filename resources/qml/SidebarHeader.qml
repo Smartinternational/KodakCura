@@ -136,6 +136,7 @@ Column
             ExclusiveGroup { id: extruderMenuGroup; }
 
             orientation: ListView.Horizontal
+            layoutDirection: Qt.RightToLeft
 
             model: Cura.ExtrudersModel { id: extrudersModel; }
 
@@ -308,8 +309,8 @@ Column
                                 {
                                     id: extruderNumberText
                                     anchors.centerIn: parent
-//                                     text: index + 1
-                                    text: index === 0 ? 2 : index
+                                    text: index + 1
+//                                     text: index === 0 ? 2 : index
                                     color: buttonColor(index)
                                     font: UM.Theme.getFont("default_bold")
                                 }
