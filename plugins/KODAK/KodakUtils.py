@@ -12,8 +12,8 @@ class KodakUtils(QObject):
     def __init__(self, parent=None):
         super(KodakUtils, self).__init__(parent)
         self._filePath = ""
-        #self._cloudUrl = "https://cloud.3dprinteros.com/"
-        self._cloudUrl = "https://acorn.3dprinteros.com/"
+        self._cloudUrl = "https://cloud.3dprinteros.com/"
+        #self._cloudUrl = "https://acorn.3dprinteros.com/"
         self._kodakUrl = "https://cloud.smart3d.tech/"
         #self._kodakUrl = "https://kodak-dev-acorn.3dprinteros.com/"
         self._appDataFolder = os.path.join(QStandardPaths.writableLocation(QStandardPaths.AppDataLocation), "KODAK")
