@@ -33,6 +33,7 @@
     "machine_depth": { "default_value": 210 },
     "machine_width": { "default_value": 255 },
     "layer_height": { "default_value": 0.2 },
-    "speed_print": { "default_value": 75 }
+    "speed_print": { "default_value": 75 },
+    "machine_use_extruder_offset_to_offset_coords":  { "default_value": false }
   }
 }
