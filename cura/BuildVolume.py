@@ -53,6 +53,10 @@ class BuildVolume(SceneNode):
         self._depth = 0 #type: float
         self._shape = "" #type: str
 
+        self._origin_offset_x = 0 #type: float
+        self._origin_offset_y = 0 #type: float
+        self._origin_offset_z = 0 #type: float
+
         self._shader = None
 
         self._origin_mesh = None
@@ -315,12 +319,13 @@ class BuildVolume(SceneNode):
             self._disallowed_area_color = Color(*theme.getColor("disallowed_area").getRgb())
             self._error_area_color = Color(*theme.getColor("error_area").getRgb())
 
-        min_w = -self._width / 2
-        max_w = self._width / 2
-        min_h = 0.0
-        max_h = self._height
-        min_d = -self._depth / 2
-        max_d = self._depth / 2
+
+        min_w = -self._width / 2 + self._origin_offset_x
+        max_w = self._width / 2 + self._origin_offset_x
+        min_h = 0.0 + self._origin_offset_y
+        max_h = self._height + self._origin_offset_y
+        min_d = -self._depth / 2 + self._origin_offset_z
+        max_d = self._depth / 2 + self._origin_offset_z
 
         z_fight_distance = 0.2 # Distance between buildplate and disallowed area meshes to prevent z-fighting
 
@@ -538,6 +543,10 @@ class BuildVolume(SceneNode):
             for extruder in extruders:
                 extruder.propertyChanged.connect(self._onSettingPropertyChanged)
 
+            self._origin_offset_x = self._global_container_stack.getProperty("machine_origin_offset_x", "value")
+            self._origin_offset_y = self._global_container_stack.getProperty("machine_origin_offset_y", "value")
+            self._origin_offset_z = self._global_container_stack.getProperty("machine_origin_offset_z", "value")
+
             self._width = self._global_container_stack.getProperty("machine_width", "value")
             machine_height = self._global_container_stack.getProperty("machine_height", "value")
             if self._global_container_stack.getProperty("print_sequence", "value") == "one_at_a_time" and len(self._scene_objects) > 1:
@@ -593,6 +602,10 @@ class BuildVolume(SceneNode):
 
             # sometimes the machine size or shape settings are adjusted on the active machine, we should reflect this
             if setting_key in self._machine_settings:
+                self._origin_offset_x = self._global_container_stack.getProperty("machine_origin_offset_x", "value")
+                self._origin_offset_y = self._global_container_stack.getProperty("machine_origin_offset_y", "value")
+                self._origin_offset_z = self._global_container_stack.getProperty("machine_origin_offset_z", "value")
+
                 self._height = self._global_container_stack.getProperty("machine_height", "value")
                 self._width = self._global_container_stack.getProperty("machine_width", "value")
                 self._depth = self._global_container_stack.getProperty("machine_depth", "value")
@@ -802,13 +815,17 @@ class BuildVolume(SceneNode):
 
         machine_width = self._global_container_stack.getProperty("machine_width", "value")
         machine_depth = self._global_container_stack.getProperty("machine_depth", "value")
+
+        origin_offset_x = self._global_container_stack.getProperty("machine_origin_offset_x", "value")
+        origin_offset_y = self._global_container_stack.getProperty("machine_origin_offset_y", "value")
+
         for extruder in used_extruders:
             prime_blob_enabled = extruder.getProperty("prime_blob_enable", "value")
-            prime_x = extruder.getProperty("extruder_prime_pos_x", "value")
-            prime_y = -extruder.getProperty("extruder_prime_pos_y", "value")
+            prime_x = extruder.getProperty("extruder_prime_pos_x", "value") + origin_offset_x
+            prime_y = -(extruder.getProperty("extruder_prime_pos_y", "value") + origin_offset_y)
 
             #Ignore extruder prime position if it is not set or if blob is disabled
-            if (prime_x == 0 and prime_y == 0) or not prime_blob_enabled:
+            if (prime_x == (0 + origin_offset_x) and prime_y ==  (0 + origin_offset_y)) or not prime_blob_enabled:
                 result[extruder.getId()] = []
                 continue
 
@@ -849,6 +866,10 @@ class BuildVolume(SceneNode):
         nozzle_offsetting_for_disallowed_areas = self._global_container_stack.getMetaDataEntry(
             "nozzle_offsetting_for_disallowed_areas", True)
 
+        origin_offset_x = self._global_container_stack.getProperty("machine_origin_offset_x", "value")
+        origin_offset_y = self._global_container_stack.getProperty("machine_origin_offset_y", "value")
+        origin_offset_z = self._global_container_stack.getProperty("machine_origin_offset_z", "value")
+
         result = {}
         for extruder in used_extruders:
             extruder_id = extruder.getId()
@@ -865,10 +886,10 @@ class BuildVolume(SceneNode):
                 result[extruder_id].append(polygon.translate(offset_x, offset_y)) #Compensate for the nozzle offset of this extruder.
 
             #Add the border around the edge of the build volume.
-            left_unreachable_border = 0
-            right_unreachable_border = 0
-            top_unreachable_border = 0
-            bottom_unreachable_border = 0
+            left_unreachable_border = 0 + origin_offset_x
+            right_unreachable_border = 0 + origin_offset_x
+            top_unreachable_border = 0 + origin_offset_y
+            bottom_unreachable_border = 0 + origin_offset_y
 
             # Only do nozzle offsetting if needed
             if nozzle_offsetting_for_disallowed_areas:
@@ -885,37 +906,37 @@ class BuildVolume(SceneNode):
                     right_unreachable_border = max(right_unreachable_border, other_offset_x - offset_x)
                     top_unreachable_border = min(top_unreachable_border, other_offset_y - offset_y)
                     bottom_unreachable_border = max(bottom_unreachable_border, other_offset_y - offset_y)
-            half_machine_width = self._global_container_stack.getProperty("machine_width", "value") / 2
+            half_machine_width = self._global_container_stack.getProperty("machine_width", "value") / 2 
             half_machine_depth = self._global_container_stack.getProperty("machine_depth", "value") / 2
 
             if self._shape != "elliptic":
                 if border_size - left_unreachable_border > 0:
                     result[extruder_id].append(Polygon(numpy.array([
-                        [-half_machine_width, -half_machine_depth],
-                        [-half_machine_width, half_machine_depth],
-                        [-half_machine_width + border_size - left_unreachable_border, half_machine_depth - border_size - bottom_unreachable_border],
-                        [-half_machine_width + border_size - left_unreachable_border, -half_machine_depth + border_size - top_unreachable_border]
+                        [-half_machine_width + origin_offset_x, -half_machine_depth + origin_offset_z],
+                        [-half_machine_width + origin_offset_x, half_machine_depth + origin_offset_z],
+                        [-half_machine_width + border_size - left_unreachable_border + origin_offset_x, half_machine_depth + origin_offset_z - border_size - bottom_unreachable_border],
+                        [-half_machine_width + border_size - left_unreachable_border + origin_offset_x, -half_machine_depth + origin_offset_z + border_size - top_unreachable_border]
                     ], numpy.float32)))
                 if border_size + right_unreachable_border > 0:
                     result[extruder_id].append(Polygon(numpy.array([
-                        [half_machine_width, half_machine_depth],
-                        [half_machine_width, -half_machine_depth],
-                        [half_machine_width - border_size - right_unreachable_border, -half_machine_depth + border_size - top_unreachable_border],
-                        [half_machine_width - border_size - right_unreachable_border, half_machine_depth - border_size - bottom_unreachable_border]
+                        [half_machine_width + origin_offset_x, half_machine_depth + origin_offset_z],
+                        [half_machine_width + origin_offset_x, -half_machine_depth + origin_offset_z],
+                        [half_machine_width + origin_offset_x - border_size - right_unreachable_border, -half_machine_depth + origin_offset_z + border_size - top_unreachable_border],
+                        [half_machine_width + origin_offset_x - border_size - right_unreachable_border, half_machine_depth + origin_offset_z - border_size - bottom_unreachable_border]
                     ], numpy.float32)))
                 if border_size + bottom_unreachable_border > 0:
                     result[extruder_id].append(Polygon(numpy.array([
-                        [-half_machine_width, half_machine_depth],
-                        [half_machine_width, half_machine_depth],
-                        [half_machine_width - border_size - right_unreachable_border, half_machine_depth - border_size - bottom_unreachable_border],
-                        [-half_machine_width + border_size - left_unreachable_border, half_machine_depth - border_size - bottom_unreachable_border]
+                        [-half_machine_width + origin_offset_x, half_machine_depth + origin_offset_z],
+                        [half_machine_width + origin_offset_x, half_machine_depth + origin_offset_z],
+                        [half_machine_width + origin_offset_x - border_size - right_unreachable_border, half_machine_depth + origin_offset_z - border_size - bottom_unreachable_border],
+                        [-half_machine_width + origin_offset_x + border_size - left_unreachable_border, half_machine_depth + origin_offset_z - border_size - bottom_unreachable_border]
                     ], numpy.float32)))
                 if border_size - top_unreachable_border > 0:
                     result[extruder_id].append(Polygon(numpy.array([
-                        [half_machine_width, -half_machine_depth],
-                        [-half_machine_width, -half_machine_depth],
-                        [-half_machine_width + border_size - left_unreachable_border, -half_machine_depth + border_size - top_unreachable_border],
-                        [half_machine_width - border_size - right_unreachable_border, -half_machine_depth + border_size - top_unreachable_border]
+                        [half_machine_width + origin_offset_x, -half_machine_depth + origin_offset_z],
+                        [-half_machine_width + origin_offset_x, -half_machine_depth + origin_offset_z],
+                        [-half_machine_width + origin_offset_x + border_size - left_unreachable_border, -half_machine_depth + origin_offset_z + border_size - top_unreachable_border],
+                        [half_machine_width + origin_offset_x - border_size - right_unreachable_border, -half_machine_depth + origin_offset_z + border_size - top_unreachable_border]
                     ], numpy.float32)))
             else:
                 sections = 32
@@ -924,13 +945,13 @@ class BuildVolume(SceneNode):
                     quadrant = math.floor(4 * i / sections)
                     vertices = []
                     if quadrant == 0:
-                        vertices.append([-half_machine_width, half_machine_depth])
+                        vertices.append([-half_machine_width + origin_offset_x, half_machine_depth])
                     elif quadrant == 1:
-                        vertices.append([-half_machine_width, -half_machine_depth])
+                        vertices.append([-half_machine_width + origin_offset_x, -half_machine_depth])
                     elif quadrant == 2:
-                        vertices.append([half_machine_width, -half_machine_depth])
+                        vertices.append([half_machine_width + origin_offset_x, -half_machine_depth])
                     elif quadrant == 3:
-                        vertices.append([half_machine_width, half_machine_depth])
+                        vertices.append([half_machine_width + origin_offset_x, half_machine_depth])
                     vertices.append(arc_vertex)
 
                     angle = 2 * math.pi * (i + 1) / sections
@@ -941,24 +962,24 @@ class BuildVolume(SceneNode):
 
                 if border_size > 0:
                     result[extruder_id].append(Polygon(numpy.array([
-                        [-half_machine_width, -half_machine_depth],
-                        [-half_machine_width, half_machine_depth],
-                        [-half_machine_width + border_size, 0]
+                        [-half_machine_width + origin_offset_x, -half_machine_depth + origin_offset_z],
+                        [-half_machine_width + origin_offset_x, half_machine_depth + origin_offset_z],
+                        [-half_machine_width + origin_offset_x + border_size, 0 + origin_offset_z]
                     ], numpy.float32)))
                     result[extruder_id].append(Polygon(numpy.array([
-                        [-half_machine_width, half_machine_depth],
-                        [ half_machine_width, half_machine_depth],
-                        [ 0, half_machine_depth - border_size]
+                        [-half_machine_width + origin_offset_x, half_machine_depth + origin_offset_z],
+                        [ half_machine_width + origin_offset_x, half_machine_depth + origin_offset_z],
+                        [ 0 + origin_offset_x, half_machine_depth - border_size + origin_offset_z]
                     ], numpy.float32)))
                     result[extruder_id].append(Polygon(numpy.array([
-                        [ half_machine_width, half_machine_depth],
-                        [ half_machine_width, -half_machine_depth],
-                        [ half_machine_width - border_size, 0]
+                        [ half_machine_width + origin_offset_x, half_machine_depth + origin_offset_z],
+                        [ half_machine_width + origin_offset_x, -half_machine_depth + origin_offset_z],
+                        [ half_machine_width + origin_offset_x - border_size, 0 + origin_offset_z]
                     ], numpy.float32)))
                     result[extruder_id].append(Polygon(numpy.array([
-                        [ half_machine_width,-half_machine_depth],
-                        [-half_machine_width,-half_machine_depth],
-                        [ 0, -half_machine_depth + border_size]
+                        [ half_machine_width + origin_offset_x,-half_machine_depth + origin_offset_z],
+                        [-half_machine_width + origin_offset_x,-half_machine_depth + origin_offset_z],
+                        [ 0 + origin_offset_x, -half_machine_depth + border_size + origin_offset_z]
                     ], numpy.float32)))
 
         return result

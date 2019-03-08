@@ -794,14 +794,14 @@ class CuraApplication(QtApplication):
         diagonal = self.getBuildVolume().getDiagonalSize()
         if diagonal < 1: #No printer added yet. Set a default camera distance for normal-sized printers.
             diagonal = 375
-        camera.setPosition(Vector(-80, 250, 700) * diagonal / 375)
+        camera.setPosition(Vector(-120, 250, 700) * diagonal / 375)
         camera.setPerspective(True)
-        camera.lookAt(Vector(0, 0, 0))
+        camera.lookAt(Vector(-40, 0, 0))
         controller.getScene().setActiveCamera("3d")
 
         # Initialize camera tool
         camera_tool = controller.getTool("CameraTool")
-        camera_tool.setOrigin(Vector(0, 100, 0))
+        camera_tool.setOrigin(Vector(-40, 100, 0))
         camera_tool.setZoomRange(0.1, 2000)
 
         # Initialize camera animations

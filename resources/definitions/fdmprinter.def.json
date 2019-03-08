@@ -213,6 +213,36 @@
                     "settable_per_extruder": false,
                     "settable_per_meshgroup": false
                 },
+                "machine_origin_offset_x":
+                {
+                    "label": "Build volume X offse",
+                    "description": "Build volume X offset from origin",
+                    "default_value": 0,
+                    "type": "float",
+                    "settable_per_mesh": false,
+                    "settable_per_extruder": false,
+                    "settable_per_meshgroup": false
+                },
+                "machine_origin_offset_y":
+                {
+                    "label": "Build volume Y offset",
+                    "description": "Build plate Y offset from origin",
+                    "default_value": 0,
+                    "type": "float",
+                    "settable_per_mesh": false,
+                    "settable_per_extruder": false,
+                    "settable_per_meshgroup": false
+                },
+                "machine_origin_offset_z":
+                {
+                    "label": "Build volume Z offset",
+                    "description": "Build plate Z offset from origin",
+                    "default_value": 0,
+                    "type": "float",
+                    "settable_per_mesh": false,
+                    "settable_per_extruder": false,
+                    "settable_per_meshgroup": false
+                },
                 "machine_extruder_count":
                 {
                     "label": "Number of Extruders",
