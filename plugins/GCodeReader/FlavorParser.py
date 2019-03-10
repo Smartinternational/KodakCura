@@ -282,11 +282,17 @@ class FlavorParser:
     ##  For showing correct x, y offsets for each extruder
     def _extruderOffsets(self) -> Dict[int, List[float]]:
         result = {}
-        for extruder in ExtruderManager.getInstance().getActiveExtruderStacks():
-            result[int(extruder.getMetaData().get("position", "0"))] = [
-                extruder.getProperty("machine_nozzle_offset_x", "value"),
-                extruder.getProperty("machine_nozzle_offset_y", "value")]
-        return result
+        settings =  CuraApplication.getInstance().getGlobalContainerStack()
+        use_offsets = settings.getProperty("machine_use_extruder_offset_to_offset_coords", "value")
+        if (use_offsets):
+            for extruder in ExtruderManager.getInstance().getActiveExtruderStacks():
+                result[int(extruder.getMetaData().get("position", "0"))] = [
+                    extruder.getProperty("machine_nozzle_offset_x", "value"),
+                    extruder.getProperty("machine_nozzle_offset_y", "value")]
+
+        result["0"] = [0, 0]
+        result["1"] = [0, 0]
+        return result 
 
     def processGCodeStream(self, stream: str) -> Optional[CuraSceneNode]:
         Logger.log("d", "Preparing to load GCode")
