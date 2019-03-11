@@ -886,10 +886,10 @@ class BuildVolume(SceneNode):
                 result[extruder_id].append(polygon.translate(offset_x, offset_y)) #Compensate for the nozzle offset of this extruder.
 
             #Add the border around the edge of the build volume.
-            left_unreachable_border = 0 + origin_offset_x
-            right_unreachable_border = 0 + origin_offset_x
-            top_unreachable_border = 0 + origin_offset_y
-            bottom_unreachable_border = 0 + origin_offset_y
+            left_unreachable_border = 0
+            right_unreachable_border = 0
+            top_unreachable_border = 0
+            bottom_unreachable_border = 0
 
             # Only do nozzle offsetting if needed
             if nozzle_offsetting_for_disallowed_areas:
