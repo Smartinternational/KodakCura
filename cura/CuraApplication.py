@@ -480,7 +480,7 @@ class CuraApplication(QtApplication):
         preferences.addPreference("metadata/setting_version", 0)
         preferences.setValue("metadata/setting_version", self.SettingVersion) #Don't make it equal to the default so that the setting version always gets written to the file.
 
-        preferences.addPreference("cura/active_mode", "simple")
+        preferences.addPreference("cura/active_mode", 1)
 
         preferences.addPreference("cura/categories_expanded", "")
         preferences.addPreference("cura/jobname_prefix", True)
