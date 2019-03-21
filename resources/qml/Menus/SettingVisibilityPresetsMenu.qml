@@ -56,4 +56,8 @@ Menu
     }
 
     ExclusiveGroup { id: group }
+	
+	Component.onCompleted: {
+		showAllSettings()
+	}
 }
