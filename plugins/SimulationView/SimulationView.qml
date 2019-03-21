@@ -391,6 +391,7 @@ Item
                     text: label
                     visible: viewSettings.show_legend
                     id: typesLegendModelLabel
+					verticalAlignment: Text.AlignVCenter
                     Rectangle
                     {
                         anchors.verticalCenter: parent.verticalCenter
