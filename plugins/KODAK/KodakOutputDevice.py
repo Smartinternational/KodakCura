@@ -50,6 +50,7 @@ class KodakOutputDevice(OutputDevice):
         self.plugin_window = None
         self._nodes = None
         self._writing = False
+        self._stream = None
 
     ##  Request the specified nodes to be written to a file.
     #
@@ -93,10 +94,11 @@ class KodakOutputDevice(OutputDevice):
 
         file_writer = Application.getInstance().getMeshFileHandler().getWriter("GCodeWriter")
         Logger.log("d", "Writing GCode to %s", file_name)
-        stream = open(file_name, "wt", encoding="utf-8")
+        self._stream = None
+        self._stream = open(file_name, "wt", encoding="utf-8")
 
         try:
-            job = WriteFileJob(file_writer, stream, self._nodes, MeshWriter.OutputMode.TextMode)
+            job = WriteFileJob(file_writer, self._stream, self._nodes, MeshWriter.OutputMode.TextMode)
             job.setFileName(file_name)
             job.progress.connect(self._onJobProgress)
             job.finished.connect(self._onWriteJobFinished)
@@ -125,6 +127,7 @@ class KodakOutputDevice(OutputDevice):
         self.writeProgress.emit(self, progress)
 
     def _onWriteJobFinished(self, job):
+        self._stream.close()
         self._writing = False
         self.writeFinished.emit(self)
         if job.getResult():
