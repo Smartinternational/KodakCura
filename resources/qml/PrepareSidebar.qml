@@ -194,8 +194,8 @@ Rectangle
                 id: control
 
                 height: settingsModeSelection.height
-                width: Math.round(parent.width / 2)
-
+//                 width: Math.round(parent.width / 2)
+                width: Math.round(parent.width)
                 anchors.left: parent.left
                 anchors.leftMargin: model.index * Math.round(settingsModeSelection.width / 2)
                 anchors.verticalCenter: parent.verticalCenter
@@ -263,6 +263,7 @@ Rectangle
         {
             id: modesList
             model: modesListModel
+            visible: false
             delegate: wizardDelegate
             anchors.top: parent.top
             anchors.left: parent.left
@@ -581,7 +582,8 @@ Rectangle
             tooltipText: catalog.i18nc("@tooltip", "<b>Custom Print Setup</b><br/><br/>Print with finegrained control over every last bit of the slicing process."),
             item: sidebarAdvanced
         })
-
+        
+        currentModeIndex = 1;
         var index = Math.round(UM.Preferences.getValue("cura/active_mode"))
 
         if(index != null && !isNaN(index))
