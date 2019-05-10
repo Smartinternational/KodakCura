@@ -288,23 +288,6 @@
             }
         }
     },
-    "MonitorStage": {
-        "package_info": {
-            "package_id": "MonitorStage",
-            "package_type": "plugin",
-            "display_name": "Monitor Stage",
-            "description": "Provides a monitor stage in Cura.",
-            "package_version": "1.0.0",
-            "sdk_version": 5,
-            "website": "https://ultimaker.com",
-            "author": {
-                "author_id": "UltimakerPackages",
-                "display_name": "Ultimaker B.V.",
-                "email": "plugins@ultimaker.com",
-                "website": "https://ultimaker.com"
-            }
-        }
-    },
     "PerObjectSettingsTool": {
         "package_info": {
             "package_id": "PerObjectSettingsTool",
