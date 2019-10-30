@@ -1,0 +1,52 @@
+{
+    "version": 2,
+    "name": "Loop3D",
+    "inherits": "fdmprinter",
+    "metadata": {
+        "visible": true,
+        "author": "AMirovskiy",
+        "manufacturer": "Loop3D",
+        "file_formats": "text/x-gcode",
+        "category": "Loop3D",
+        "has_machine_quality": true,
+        "preferred_quality_type": "normal",
+        "machine_extruder_trains":
+        {
+            "0": "loop3d_extruder_0"
+        }
+    },
+
+    "overrides": {
+        "machine_name": { "default_value": "Loop3D" },
+        "machine_heated_bed": {
+            "default_value": true
+        },
+        "machine_width": {
+            "default_value": 450
+        },
+        "machine_height": {
+            "default_value": 500
+        },
+        "machine_depth": {
+            "default_value": 300
+        },
+        "gantry_height": {
+            "default_value": 55
+        },
+        "material_diameter": {
+            "default_value": 1.75
+        },
+        "machine_nozzle_size": {
+            "default_value": 0.4
+        },
+        "machine_gcode_flavor": {
+            "default_value": "RepRap (Marlin/Sprinter)"
+        },
+        "machine_start_gcode": {
+            "default_value": "G28\nM117 ;Print is Starting\nM106 P1 S0\nG90\nM83"
+        },
+        "machine_end_gcode": {
+            "default_value": "G1 X0 Y0\nM107\nG91\nM83\nM104 T0 S0\nG92 E0\nG90\nM140 S0\nM84 S10"
+        }
+    } 
+}

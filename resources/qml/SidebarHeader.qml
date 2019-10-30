@@ -519,7 +519,7 @@ Column
     }
 
     // Material info row
-    Item
+    /*Item
     {
         id: materialInfoRow
         height: Math.round(UM.Theme.getSize("sidebar_setup").height / 2)
@@ -601,7 +601,7 @@ Column
                 }
             }
         }
-    }
+    }*/
 
     UM.SettingPropertyProvider
     {

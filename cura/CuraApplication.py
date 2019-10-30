@@ -160,14 +160,14 @@ class CuraApplication(QtApplication):
     Q_ENUMS(ResourceTypes)
 
     def __init__(self, *args, **kwargs):
-        super().__init__(name = "cura",
+        super().__init__(name = "loop3d_slicer",
                          version = CuraVersion,
                          buildtype = CuraBuildType,
                          is_debug_mode = CuraDebugMode,
                          tray_icon_name = "cura-icon-32.png",
                          **kwargs)
 
-        self.default_theme = "cura-light"
+        self.default_theme = "loop3d"
 
         self.change_log_url = "https://ultimaker.com/ultimaker-cura-latest-features"
 
