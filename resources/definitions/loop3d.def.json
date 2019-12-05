@@ -46,7 +46,7 @@
             "default_value": "G28\nM117 ;Print is Starting\nM106 P1 S0\nG90\nM83"
         },
         "machine_end_gcode": {
-            "default_value": "G1 X0 Y0\nM107\nG91\nM83\nM104 T0 S0\nG92 E0\nG90\nM140 S0\nM84 S10"
+            "default_value": "G1 X0 Y0\nM107\nG91\nM83\nM104 T0 S0\nG92 E0\nG90\nM140 S0\nM84 S10\nG1 Z200 F6000 S2"
         }
     } 
 }
